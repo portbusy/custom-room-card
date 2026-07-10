@@ -28,7 +28,7 @@ var CARD_STYLE = `
   :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:8px;min-height:36px;max-width:100%;padding:0 14px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .9em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:21px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
 `;
 var EDITOR_STYLE = `
-  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:12px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px}.category-title{font-weight:500}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.chip-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(max-width:520px){.fields,.chip-options{grid-template-columns:1fr}}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}@media(max-width:520px){.fields{grid-template-columns:1fr}}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px}
 `;
 function defaultColor(name = "") {
   const n = name.toLowerCase();
@@ -317,8 +317,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
     });
     main.append(picker, remove);
     container.append(main);
-    const options = document.createElement("div");
-    options.className = "chip-options";
+    const appearanceTitle = document.createElement("div");
+    appearanceTitle.className = "editor-section-title";
+    appearanceTitle.textContent = "Aspetto";
+    container.append(appearanceTitle);
+    const appearanceGrid = document.createElement("div");
+    appearanceGrid.className = "chip-options";
     const name = document.createElement("ha-input");
     name.label = "Etichetta";
     name.value = chip.name || "";
@@ -338,6 +342,14 @@ var CustomRoomCardEditor = class extends HTMLElement {
     color.selector = { ui_color: {} };
     color.value = chip.color || "#ffb300";
     this._handlePicker(color, (value) => onChange({ ...chip, color: value || void 0 }));
+    appearanceGrid.append(name, icon, activeIcon, color);
+    container.append(appearanceGrid);
+    const actionsTitle = document.createElement("div");
+    actionsTitle.className = "editor-section-title";
+    actionsTitle.textContent = "Azioni";
+    container.append(actionsTitle);
+    const actionsGrid = document.createElement("div");
+    actionsGrid.className = "chip-options";
     const tapAction = document.createElement("ha-selector");
     tapAction.hass = this._hass;
     tapAction.label = "Azione tocco";
@@ -350,8 +362,8 @@ var CustomRoomCardEditor = class extends HTMLElement {
     holdAction.selector = { ui_action: {} };
     holdAction.value = chip.hold_action || { action: "none" };
     this._handlePicker(holdAction, (value) => onChange({ ...chip, hold_action: value || void 0 }));
-    options.append(name, icon, activeIcon, color, tapAction, holdAction);
-    container.append(options);
+    actionsGrid.append(tapAction, holdAction);
+    container.append(actionsGrid);
     const details = document.createElement("details");
     details.setAttribute("data-details-id", `${roomIndex}-${category}-${entityIndex}`);
     const summary = document.createElement("summary");
@@ -457,7 +469,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     Object.entries(CATEGORIES).forEach(([key, meta]) => {
       const category = document.createElement("section");
       category.className = "category";
-      category.innerHTML = `<span class="category-title">${meta.label}</span>`;
+      category.innerHTML = `<div class="category-header"><ha-icon icon="${meta.icon}"></ha-icon><span class="category-title">${meta.label}</span></div>`;
       container.querySelector(".entities").append(category);
       const domains = meta.domains || [meta.domain];
       const rawSelected = room.entities?.[key];
