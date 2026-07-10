@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.20";
+const VERSION = "0.3.21";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -747,7 +747,17 @@ class CustomRoomCardEditor extends HTMLElement {
     this._hass = hass;
     // Home Assistant updates `hass` for every state change. Rebuilding this
     // editor here destroys an open native entity-picker while it is searching.
-    if (needsInitialRender) this._render();
+    if (needsInitialRender) {
+      this._render();
+      if (hass && typeof hass.loadBackendTranslation === "function") {
+        try {
+          hass.loadBackendTranslation("config");
+          hass.loadBackendTranslation("translation", "automation");
+        } catch (e) {
+          console.warn("Could not load backend translations for condition editor", e);
+        }
+      }
+    }
   }
   _emit(config) {
     this._config = config;

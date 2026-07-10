@@ -1,6 +1,6 @@
 // src/custom-room-card.js
 var CARD_TAG = "custom-room-card";
-var VERSION = "0.3.20";
+var VERSION = "0.3.21";
 var CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -731,7 +731,17 @@ var CustomRoomCardEditor = class extends HTMLElement {
   set hass(hass) {
     const needsInitialRender = !this._hass && this._config;
     this._hass = hass;
-    if (needsInitialRender) this._render();
+    if (needsInitialRender) {
+      this._render();
+      if (hass && typeof hass.loadBackendTranslation === "function") {
+        try {
+          hass.loadBackendTranslation("config");
+          hass.loadBackendTranslation("translation", "automation");
+        } catch (e) {
+          console.warn("Could not load backend translations for condition editor", e);
+        }
+      }
+    }
   }
   _emit(config) {
     this._config = config;
