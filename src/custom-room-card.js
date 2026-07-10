@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.15";
+const VERSION = "0.3.16";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -662,6 +662,7 @@ class CustomRoomCardEditor extends HTMLElement {
   _handlePicker(picker, callback, rerender = false) {
     picker.addEventListener("value-changed", (event) => {
       if (event.target !== picker) return;
+      picker.value = event.detail.value;
       callback(event.detail.value);
       if (rerender) this._render();
     });
