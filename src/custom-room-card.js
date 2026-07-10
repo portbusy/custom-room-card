@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.21";
+const VERSION = "0.3.22";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -139,7 +139,8 @@ class CustomRoomCard extends HTMLElement {
       (this._config.rooms || []).forEach(room => {
         if (room.condition_entity) entities.add(room.condition_entity);
         if (room.visibility) {
-          extractConditionEntities(room.visibility).forEach(id => entities.add(id));
+          const conds = Array.isArray(room.visibility) ? room.visibility : [room.visibility];
+          extractConditionEntities(conds).forEach(id => entities.add(id));
         }
         if (room.temperature_entity) entities.add(room.temperature_entity);
         if (room.humidity_entity) entities.add(room.humidity_entity);
@@ -155,7 +156,8 @@ class CustomRoomCard extends HTMLElement {
               const condId = item?.condition_entity;
               if (condId) entities.add(condId);
               if (item?.visibility) {
-                extractConditionEntities(item.visibility).forEach(cid => entities.add(cid));
+                const conds = Array.isArray(item.visibility) ? item.visibility : [item.visibility];
+                extractConditionEntities(conds).forEach(cid => entities.add(cid));
               }
             });
           });
@@ -180,7 +182,8 @@ class CustomRoomCard extends HTMLElement {
           const condId = item?.condition_entity;
           if (condId) entities.add(condId);
           if (item?.visibility) {
-            extractConditionEntities(item.visibility).forEach(cid => entities.add(cid));
+            const conds = Array.isArray(item.visibility) ? item.visibility : [item.visibility];
+            extractConditionEntities(conds).forEach(cid => entities.add(cid));
           }
         });
       }
@@ -347,8 +350,9 @@ class CustomRoomCard extends HTMLElement {
     });
   }
   _showChip(chip) {
-    if (chip.visibility && Array.isArray(chip.visibility)) {
-      return checkConditionsMet(this._hass, chip.visibility);
+    if (chip.visibility) {
+      const conds = Array.isArray(chip.visibility) ? chip.visibility : [chip.visibility];
+      return checkConditionsMet(this._hass, conds);
     }
     if (!chip.condition_entity) return true;
     const stateObj = this._hass.states[chip.condition_entity];
@@ -357,8 +361,9 @@ class CustomRoomCard extends HTMLElement {
     return chip.condition_invert ? !isMatched : isMatched;
   }
   _showRoom(room) {
-    if (room.visibility && Array.isArray(room.visibility)) {
-      return checkConditionsMet(this._hass, room.visibility);
+    if (room.visibility) {
+      const conds = Array.isArray(room.visibility) ? room.visibility : [room.visibility];
+      return checkConditionsMet(this._hass, conds);
     }
     if (!room.condition_entity) return true;
     const stateObj = this._hass.states[room.condition_entity];
@@ -944,8 +949,9 @@ class CustomRoomCardEditor extends HTMLElement {
       condSelector.selector = { condition: {} };
       condSelector.value = visibility;
       this._handlePicker(condSelector, (value) => {
+        const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateChip(roomIndex, category, entityIndex, {
-          visibility: value && value.length > 0 ? value : undefined,
+          visibility: hasValue ? value : undefined,
           condition_entity: undefined,
           condition_state: undefined,
           condition_invert: undefined
@@ -1195,8 +1201,9 @@ class CustomRoomCardEditor extends HTMLElement {
       condSelector.selector = { condition: {} };
       condSelector.value = visibility;
       this._handlePicker(condSelector, (value) => {
+        const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateRoom(index, {
-          visibility: value && value.length > 0 ? value : undefined,
+          visibility: hasValue ? value : undefined,
           condition_entity: undefined,
           condition_state: undefined,
           condition_invert: undefined
