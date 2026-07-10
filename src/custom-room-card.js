@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.3";
+const VERSION = "0.3.4";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -120,7 +120,13 @@ class CustomRoomCard extends HTMLElement {
   disconnectedCallback() {
     if (this._clock) window.clearInterval(this._clock);
     this._clock = null;
-    Object.values(this._templateSubs).forEach((sub) => { if (typeof sub.unsub === "function") sub.unsub(); });
+    Object.values(this._templateSubs).forEach((sub) => {
+      if (sub.unsubFunc) {
+        sub.unsubFunc();
+      } else {
+        sub.cancelled = true;
+      }
+    });
     this._templateSubs = {};
     this._renderedTemplates = {};
   }
@@ -153,37 +159,52 @@ class CustomRoomCard extends HTMLElement {
     const cardType = this._config.card_type || "rooms";
     const activeKeys = new Set();
     
-    const checkChip = (chip, roomIndex, category, chipIndex) => {
-      const key = `${roomIndex}-${category}-${chipIndex}`;
-      const templateStr = chip.name;
+    const checkTemplate = (templateStr, key) => {
       const isTemplate = templateStr && (templateStr.includes("{{") || templateStr.includes("{%"));
-      
       if (isTemplate) {
         activeKeys.add(key);
         if (!this._templateSubs[key] || this._templateSubs[key].template !== templateStr) {
-          if (this._templateSubs[key] && typeof this._templateSubs[key].unsub === "function") {
-            this._templateSubs[key].unsub();
+          if (this._templateSubs[key]) {
+            const oldSub = this._templateSubs[key];
+            if (oldSub.unsubFunc) {
+              oldSub.unsubFunc();
+            } else {
+              oldSub.cancelled = true;
+            }
           }
-          try {
-            const unsub = this._hass.connection.subscribeMessage(
-              (output) => {
-                if (output && output.result !== undefined && this._renderedTemplates[key] !== output.result) {
-                  this._renderedTemplates[key] = output.result;
-                  this._render();
-                }
-              },
-              { type: "render_template", template: templateStr }
-            );
-            this._templateSubs[key] = { template: templateStr, unsub };
-          } catch (e) {
-            console.error("Error subscribing to template", e);
-          }
+          const subInfo = { template: templateStr, unsubFunc: null, cancelled: false };
+          this._templateSubs[key] = subInfo;
+          
+          this._hass.connection.subscribeMessage(
+            (output) => {
+              if (subInfo.cancelled) return;
+              if (output && output.result !== undefined && this._renderedTemplates[key] !== output.result) {
+                this._renderedTemplates[key] = output.result;
+                this._render();
+              }
+            },
+            { type: "render_template", template: templateStr }
+          ).then(
+            (unsubFunc) => {
+              if (subInfo.cancelled) {
+                unsubFunc();
+              } else {
+                subInfo.unsubFunc = unsubFunc;
+              }
+            },
+            (err) => {
+              console.error("Error subscribing to template", err);
+            }
+          );
         }
       }
     };
 
     if (cardType === "rooms") {
       (this._config.rooms || []).forEach((room, roomIndex) => {
+        if (room.title) {
+          checkTemplate(room.title, `room-${roomIndex}-title`);
+        }
         const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
         const order = this._config.category_order || defaultOrder;
         order.forEach((category) => {
@@ -191,22 +212,29 @@ class CustomRoomCard extends HTMLElement {
           const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
           selectedArray.forEach((item, chipIndex) => {
             const chip = typeof item === "string" ? { entity: item } : item;
-            checkChip(chip, roomIndex, category, chipIndex);
+            if (chip.name) {
+              checkTemplate(chip.name, `${roomIndex}-${category}-${chipIndex}`);
+            }
           });
         });
       });
     } else {
       (this._config.chips || []).forEach((item, chipIndex) => {
         const chip = typeof item === "string" ? { entity: item } : item;
-        checkChip(chip, 0, "weather", chipIndex);
+        if (chip.name) {
+          checkTemplate(chip.name, `0-weather-${chipIndex}`);
+        }
       });
     }
     
     // Clean up stale subscriptions
     Object.keys(this._templateSubs).forEach((key) => {
       if (!activeKeys.has(key)) {
-        if (typeof this._templateSubs[key].unsub === "function") {
-          this._templateSubs[key].unsub();
+        const oldSub = this._templateSubs[key];
+        if (oldSub.unsubFunc) {
+          oldSub.unsubFunc();
+        } else {
+          oldSub.cancelled = true;
         }
         delete this._templateSubs[key];
         delete this._renderedTemplates[key];
@@ -465,7 +493,7 @@ class CustomRoomCard extends HTMLElement {
     });
   }
   _room(room, ids, roomIndex) {
-    const area = this._hass.areas?.[room.area]; const title = room.title || area?.name || room.area;
+    const area = this._hass.areas?.[room.area]; const title = this._renderedTemplates?.[`room-${roomIndex}-title`] || room.title || area?.name || room.area;
     const temp = room.temperature_entity ? this._hass.states[room.temperature_entity] : this._sensor(ids, ["temperature"]);
     const humidity = room.humidity_entity ? this._hass.states[room.humidity_entity] : this._sensor(ids, ["humidity"]);
     const lux = room.illuminance_entity ? this._hass.states[room.illuminance_entity] : this._sensor(ids, ["illuminance"]);
