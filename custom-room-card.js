@@ -1,6 +1,6 @@
 // src/custom-room-card.js
 var CARD_TAG = "custom-room-card";
-var VERSION = "0.3.10";
+var VERSION = "0.3.11";
 var CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -376,8 +376,8 @@ var CustomRoomCard = class extends HTMLElement {
   _bindEvents(cardType) {
     if (cardType === "rooms") {
       this.shadowRoot.querySelectorAll(".header:not(.weather-header)").forEach((button) => {
+        const roomIndex = Number.parseInt(button.dataset.roomIndex);
         const getActionConfig = () => {
-          const roomIndex = Number.parseInt(button.dataset.roomIndex);
           const room = this._config.rooms[roomIndex];
           return {
             entity: room.motion_entity || (button.dataset.entity !== "" ? button.dataset.entity : void 0),
@@ -386,6 +386,14 @@ var CustomRoomCard = class extends HTMLElement {
           };
         };
         button.addEventListener("click", () => {
+          if (document.querySelector("custom-room-card-editor")) {
+            window.dispatchEvent(new CustomEvent("custom-room-card-select", {
+              bubbles: true,
+              composed: true,
+              detail: { roomIndex, type: "room" }
+            }));
+            return;
+          }
           const actionConfig = getActionConfig();
           const actionEvent = new CustomEvent("hass-action", {
             bubbles: true,
@@ -399,6 +407,7 @@ var CustomRoomCard = class extends HTMLElement {
         });
         button.addEventListener("contextmenu", (event) => {
           event.preventDefault();
+          if (document.querySelector("custom-room-card-editor")) return;
           const actionConfig = getActionConfig();
           const actionEvent = new CustomEvent("hass-action", {
             bubbles: true,
@@ -427,6 +436,14 @@ var CustomRoomCard = class extends HTMLElement {
           };
         };
         button.addEventListener("click", () => {
+          if (document.querySelector("custom-room-card-editor")) {
+            window.dispatchEvent(new CustomEvent("custom-room-card-select", {
+              bubbles: true,
+              composed: true,
+              detail: { roomIndex: 0, type: "room" }
+            }));
+            return;
+          }
           const actionConfig = getActionConfig();
           const actionEvent = new CustomEvent("hass-action", {
             bubbles: true,
@@ -440,6 +457,7 @@ var CustomRoomCard = class extends HTMLElement {
         });
         button.addEventListener("contextmenu", (event) => {
           event.preventDefault();
+          if (document.querySelector("custom-room-card-editor")) return;
           const actionConfig = getActionConfig();
           const actionEvent = new CustomEvent("hass-action", {
             bubbles: true,
@@ -454,10 +472,10 @@ var CustomRoomCard = class extends HTMLElement {
       });
     }
     this.shadowRoot.querySelectorAll(".chip").forEach((button) => {
+      const roomIndex = Number.parseInt(button.dataset.roomIndex);
+      const category = button.dataset.category;
+      const chipIndex = Number.parseInt(button.dataset.chipIndex);
       const getActionConfig = () => {
-        const roomIndex = Number.parseInt(button.dataset.roomIndex);
-        const category = button.dataset.category;
-        const chipIndex = Number.parseInt(button.dataset.chipIndex);
         let chip;
         if (category === "weather") {
           const item = (this._config.chips || [])[chipIndex];
@@ -477,6 +495,19 @@ var CustomRoomCard = class extends HTMLElement {
       };
       button.addEventListener("click", (event) => {
         event.stopPropagation();
+        if (document.querySelector("custom-room-card-editor")) {
+          window.dispatchEvent(new CustomEvent("custom-room-card-select", {
+            bubbles: true,
+            composed: true,
+            detail: {
+              roomIndex,
+              category,
+              chipIndex,
+              type: "chip"
+            }
+          }));
+          return;
+        }
         const actionConfig = getActionConfig();
         const actionEvent = new CustomEvent("hass-action", {
           bubbles: true,
@@ -490,7 +521,7 @@ var CustomRoomCard = class extends HTMLElement {
       });
       button.addEventListener("contextmenu", (event) => {
         event.preventDefault();
-        event.stopPropagation();
+        if (document.querySelector("custom-room-card-editor")) return;
         const actionConfig = getActionConfig();
         const actionEvent = new CustomEvent("hass-action", {
           bubbles: true,
@@ -554,6 +585,44 @@ var CustomRoomCardEditor = class extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+  }
+  connectedCallback() {
+    this._selectListener = (event) => {
+      const { type, roomIndex, category, chipIndex } = event.detail;
+      this._focusEditorPanel(type, roomIndex, category, chipIndex);
+    };
+    window.addEventListener("custom-room-card-select", this._selectListener);
+  }
+  disconnectedCallback() {
+    if (this._selectListener) {
+      window.removeEventListener("custom-room-card-select", this._selectListener);
+    }
+  }
+  _focusEditorPanel(type, roomIndex, category, chipIndex) {
+    if (!this.shadowRoot) return;
+    const roomPanels = this.shadowRoot.querySelectorAll("ha-expansion-panel:not([data-panel-id])");
+    const roomPanel = roomPanels[roomIndex];
+    if (roomPanel) {
+      if (!roomPanel.expanded) {
+        roomPanel.expanded = true;
+        roomPanel.dispatchEvent(new CustomEvent("expanded-changed"));
+      }
+      if (type === "chip") {
+        setTimeout(() => {
+          const chipPanelId = `${roomIndex}-${category}-${chipIndex}`;
+          const chipPanel = this.shadowRoot.querySelector(`ha-expansion-panel[data-panel-id="${chipPanelId}"]`);
+          if (chipPanel) {
+            if (!chipPanel.expanded) {
+              chipPanel.expanded = true;
+              chipPanel.dispatchEvent(new CustomEvent("expanded-changed"));
+            }
+            chipPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 120);
+      } else {
+        roomPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
   }
   setConfig(config) {
     const card_type = config.card_type || "rooms";
