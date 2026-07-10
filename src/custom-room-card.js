@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.23";
+const VERSION = "0.3.24";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -57,8 +57,9 @@ function checkConditionsMet(hass, conditions) {
     }
     
     if (cond.condition === "state") {
-      if (!cond.entity) return true;
-      const stateObj = hass.states[cond.entity];
+      const entityId = cond.entity_id || cond.entity;
+      if (!entityId) return true;
+      const stateObj = hass.states[entityId];
       const state = stateObj ? stateObj.state : "unavailable";
       
       if (cond.state !== undefined) {
@@ -77,8 +78,9 @@ function checkConditionsMet(hass, conditions) {
     }
     
     if (cond.condition === "numeric_state") {
-      if (!cond.entity) return true;
-      const stateObj = hass.states[cond.entity];
+      const entityId = cond.entity_id || cond.entity;
+      if (!entityId) return true;
+      const stateObj = hass.states[entityId];
       if (!stateObj) return false;
       const val = parseFloat(stateObj.state);
       if (isNaN(val)) return false;
@@ -107,8 +109,9 @@ function extractConditionEntities(conditions) {
   if (!conditions || !Array.isArray(conditions)) return entities;
   conditions.forEach((cond) => {
     if (!cond) return;
-    if (cond.entity) {
-      entities.push(cond.entity);
+    const entityId = cond.entity_id || cond.entity;
+    if (entityId) {
+      entities.push(entityId);
     }
     if (cond.conditions) {
       entities.push(...extractConditionEntities(cond.conditions));
