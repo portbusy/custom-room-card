@@ -17,10 +17,10 @@ var number = (value, digits = 0) => {
 };
 var entityName = (hass, id) => hass.states[id]?.attributes?.friendly_name || id;
 var CARD_STYLE = `
-  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;height:166px;box-sizing:border-box;padding:34px 36px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 52%,transparent) 39%,color-mix(in srgb,var(--room-color) 15%,transparent) 72%,transparent)}.title{font-size:2rem;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:30px;top:52px;--mdc-icon-size:46px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:12px;margin-top:14px;font-size:1.15rem;white-space:nowrap}.summary ha-icon{--mdc-icon-size:19px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.chips{display:flex;align-content:center;gap:12px;flex-wrap:wrap;box-sizing:border-box;min-height:128px;padding:20px 28px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;padding:0 17px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 1rem/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:24px;color:var(--secondary-text-color)}.chip.active{border-color:rgb(255 167 38 / 52%);background:rgb(255 167 38 / 15%)}.chip.active ha-icon{color:#ffb300}.empty{box-sizing:border-box;min-height:128px;padding:48px 28px;color:var(--secondary-text-color)}@media(max-width:450px){.header{height:72px;padding:10px 16px}.chips{min-height:94px;padding:13px 14px;gap:7px}.room-icon{right:16px;top:21px;--mdc-icon-size:31px}.title{font-size:1rem}.summary{gap:6px;margin-top:5px;font-size:.72rem;max-width:85%;overflow:hidden}.summary ha-icon{--mdc-icon-size:12px}.chip{min-height:32px;padding:0 11px;gap:5px;font-size:.74rem}.chip ha-icon{--mdc-icon-size:17px}.empty{min-height:94px;padding:36px 14px;font-size:.75rem}}
+  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:8px;min-height:36px;max-width:100%;padding:0 14px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .9em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:21px;color:var(--secondary-text-color)}.chip.active{border-color:rgb(255 167 38 / 52%);background:rgb(255 167 38 / 15%)}.chip.active ha-icon{color:#ffb300}.empty{padding:18px 14px;color:var(--secondary-text-color)}
 `;
 var EDITOR_STYLE = `
-  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px;border:1px solid var(--divider-color);border-radius:12px}.room-head{display:flex;align-items:center;justify-content:space-between}.room-head h3{margin:0;font-size:1rem}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:10px}.entities h4{margin:2px 0 0;font-size:.95rem}@media(max-width:520px){.fields{grid-template-columns:1fr}}
+  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px;border:1px solid var(--divider-color);border-radius:12px}.room-head{display:flex;align-items:center;justify-content:space-between}.room-head h3{margin:0;font-size:1rem}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:12px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px}.category-title{font-weight:500}.entity-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}@media(max-width:520px){.fields{grid-template-columns:1fr}}
 `;
 function defaultColor(name = "") {
   const n = name.toLowerCase();
@@ -141,13 +141,43 @@ var CustomRoomCardEditor = class extends HTMLElement {
     const rooms = this._config.rooms.map((room, i) => i === index ? { ...room, ...changes } : room);
     this._emit({ ...this._config, rooms });
   }
-  _selector(holder, selector, value, change) {
-    const picker = document.createElement("ha-selector");
+  _handlePicker(picker, callback, rerender = false) {
+    picker.addEventListener("value-changed", (event) => {
+      if (event.target !== picker) return;
+      callback(event.detail.value);
+      if (rerender) this._render();
+    });
+  }
+  _addEntityPicker(holder, label, domains, onPick) {
+    const picker = document.createElement("ha-entity-picker");
     picker.hass = this._hass;
-    picker.selector = selector;
-    picker.value = value;
-    picker.addEventListener("value-changed", (event) => change(event.detail.value));
+    picker.label = label;
+    picker.includeDomains = domains;
+    picker.value = "";
+    picker.allowCustomEntity = true;
+    this._handlePicker(picker, (value) => {
+      if (value) onPick(value);
+    }, true);
     holder.append(picker);
+  }
+  _selectedEntityRow(holder, entity, domains, onChange, onRemove) {
+    const row = document.createElement("div");
+    row.className = "entity-row";
+    const picker = document.createElement("ha-entity-picker");
+    picker.hass = this._hass;
+    picker.value = entity;
+    picker.includeDomains = domains;
+    picker.allowCustomEntity = true;
+    this._handlePicker(picker, (value) => value ? onChange(value) : onRemove(), !entity);
+    const remove = document.createElement("ha-icon-button");
+    remove.icon = "mdi:close";
+    remove.label = "Rimuovi entit\xE0";
+    remove.addEventListener("click", () => {
+      onRemove();
+      this._render();
+    });
+    row.append(picker, remove);
+    holder.append(row);
   }
   _render() {
     if (!this._hass || !this._config) return;
@@ -163,21 +193,40 @@ var CustomRoomCardEditor = class extends HTMLElement {
   _roomEditor(parent, room, index) {
     const container = document.createElement("section");
     container.className = "room-editor";
-    container.innerHTML = `<div class="room-head"><h3>Stanza ${index + 1}</h3><ha-icon-button data-remove icon="mdi:delete" label="Rimuovi stanza"></ha-icon-button></div><div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field" data-color><span>Colore base</span></div><div class="field" data-icon><span>Icona</span></div><div class="field" data-motion><span>Sensore movimento</span></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div>`;
+    container.innerHTML = `<div class="room-head"><h3>Stanza ${index + 1}</h3><ha-icon-button data-remove icon="mdi:delete" label="Rimuovi stanza"></ha-icon-button></div><div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div>`;
     parent.append(container);
-    const picker = container.querySelector("[data-area]");
-    picker.hass = this._hass;
-    picker.value = room.area || "";
-    picker.addEventListener("value-changed", (e) => this._updateRoom(index, { area: e.detail.value }));
-    this._selector(container.querySelector("[data-color]"), { ui_color: {} }, room.color || defaultColor(this._hass.areas?.[room.area]?.name), (value) => this._updateRoom(index, { color: value }));
-    this._selector(container.querySelector("[data-icon]"), { icon: {} }, room.icon || "", (value) => this._updateRoom(index, { icon: value }));
-    this._selector(container.querySelector("[data-motion]"), { entity: { filter: [{ domain: "binary_sensor", device_class: ["motion", "occupancy", "presence"] }] } }, room.motion_entity || "", (value) => this._updateRoom(index, { motion_entity: value }));
+    const area = container.querySelector("[data-area]");
+    area.hass = this._hass;
+    area.value = room.area || "";
+    this._handlePicker(area, (value) => this._updateRoom(index, { area: value || void 0 }), true);
+    const colorHolder = container.querySelector("[data-color]");
+    const color = document.createElement("ha-selector");
+    color.hass = this._hass;
+    color.selector = { ui_color: {} };
+    color.value = room.color || defaultColor(this._hass.areas?.[room.area]?.name);
+    this._handlePicker(color, (value) => this._updateRoom(index, { color: value }));
+    colorHolder.append(color);
+    const icon = container.querySelector("[data-icon]");
+    icon.hass = this._hass;
+    icon.value = room.icon || "";
+    this._handlePicker(icon, (value) => this._updateRoom(index, { icon: value || void 0 }));
+    const motion = container.querySelector("[data-motion]");
+    motion.hass = this._hass;
+    motion.value = room.motion_entity || "";
+    motion.includeDomains = ["binary_sensor"];
+    motion.includeDeviceClasses = ["motion", "occupancy", "presence"];
+    motion.allowCustomEntity = true;
+    this._handlePicker(motion, (value) => this._updateRoom(index, { motion_entity: value || void 0 }));
     Object.entries(CATEGORIES).forEach(([key, meta]) => {
-      const field = document.createElement("div");
-      field.className = "field";
-      field.innerHTML = `<span>${meta.label}</span>`;
-      container.querySelector(".entities").append(field);
-      this._selector(field, { entity: { multiple: true, filter: (meta.domains || [meta.domain]).map((domain) => ({ domain })) } }, room.entities?.[key] || [], (value) => this._updateRoom(index, { entities: { ...room.entities || {}, [key]: value || [] } }));
+      const category = document.createElement("section");
+      category.className = "category";
+      category.innerHTML = `<span class="category-title">${meta.label}</span>`;
+      container.querySelector(".entities").append(category);
+      const domains = meta.domains || [meta.domain];
+      const selected = Array.isArray(room.entities?.[key]) ? room.entities[key] : [];
+      const set = (next) => this._updateRoom(index, { entities: { ...room.entities || {}, [key]: next } });
+      selected.forEach((entity, entityIndex) => this._selectedEntityRow(category, entity, domains, (value) => set(selected.map((item, i) => i === entityIndex ? value : item)), () => set(selected.filter((_, i) => i !== entityIndex))));
+      this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => set([...selected, value]));
     });
     container.querySelector("[data-remove]").addEventListener("click", () => {
       this._emit({ ...this._config, rooms: this._config.rooms.filter((_, i) => i !== index) });
