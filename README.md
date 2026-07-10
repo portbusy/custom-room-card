@@ -1,7 +1,11 @@
 # Custom Room Card
 
 <p align="center">
-  <img src="logo.png" alt="Custom Room Card Logo" width="160">
+  <img src="brand/logo.png" alt="Custom Room Card Logo" width="160">
+</p>
+
+<p align="center">
+  <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=portbusy&repository=custom-room-card&category=plugin"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
 </p>
 
 Una card Lovelace multi-stanza per Home Assistant: stato di presenza/aperture, temperatura, umidità e luminosità nel titolo; controlli rapidi configurati esplicitamente per ogni area.
