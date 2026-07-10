@@ -1,6 +1,6 @@
 // src/custom-room-card.js
 var CARD_TAG = "custom-room-card";
-var VERSION = "0.3.17";
+var VERSION = "0.3.18";
 var CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -39,6 +39,59 @@ function defaultColor(name = "") {
   if (/studio|office/.test(n)) return "#7c8fa9";
   return "#a66d58";
 }
+function checkConditionsMet(hass, conditions) {
+  if (!conditions || !Array.isArray(conditions) || conditions.length === 0) return true;
+  return conditions.every((cond) => {
+    if (!cond || !cond.condition) return true;
+    if (cond.condition === "state") {
+      if (!cond.entity) return true;
+      const stateObj = hass.states[cond.entity];
+      const state = stateObj ? stateObj.state : "unavailable";
+      if (cond.state !== void 0) {
+        if (Array.isArray(cond.state)) {
+          return cond.state.includes(state);
+        }
+        return state === cond.state;
+      }
+      if (cond.state_not !== void 0) {
+        if (Array.isArray(cond.state_not)) {
+          return !cond.state_not.includes(state);
+        }
+        return state !== cond.state_not;
+      }
+      return true;
+    }
+    if (cond.condition === "numeric_state") {
+      if (!cond.entity) return true;
+      const stateObj = hass.states[cond.entity];
+      if (!stateObj) return false;
+      const val = parseFloat(stateObj.state);
+      if (isNaN(val)) return false;
+      if (cond.above !== void 0 && val <= parseFloat(cond.above)) return false;
+      if (cond.below !== void 0 && val >= parseFloat(cond.below)) return false;
+      return true;
+    }
+    if (cond.condition === "user") {
+      if (!hass.user || !cond.users) return true;
+      return cond.users.includes(hass.user.id);
+    }
+    if (cond.condition === "screen") {
+      if (!cond.media_query) return true;
+      return window.matchMedia(cond.media_query).matches;
+    }
+    return true;
+  });
+}
+function extractConditionEntities(conditions) {
+  const entities = [];
+  if (!conditions || !Array.isArray(conditions)) return entities;
+  conditions.forEach((cond) => {
+    if (cond && cond.entity) {
+      entities.push(cond.entity);
+    }
+  });
+  return entities;
+}
 var CustomRoomCard = class extends HTMLElement {
   constructor() {
     super();
@@ -70,6 +123,9 @@ var CustomRoomCard = class extends HTMLElement {
     if (cardType === "rooms") {
       (this._config.rooms || []).forEach((room) => {
         if (room.condition_entity) entities.add(room.condition_entity);
+        if (room.visibility) {
+          extractConditionEntities(room.visibility).forEach((id) => entities.add(id));
+        }
         if (room.temperature_entity) entities.add(room.temperature_entity);
         if (room.humidity_entity) entities.add(room.humidity_entity);
         if (room.illuminance_entity) entities.add(room.illuminance_entity);
@@ -83,6 +139,9 @@ var CustomRoomCard = class extends HTMLElement {
               if (id) entities.add(id);
               const condId = item?.condition_entity;
               if (condId) entities.add(condId);
+              if (item?.visibility) {
+                extractConditionEntities(item.visibility).forEach((cid) => entities.add(cid));
+              }
             });
           });
         }
@@ -105,6 +164,9 @@ var CustomRoomCard = class extends HTMLElement {
           if (id) entities.add(id);
           const condId = item?.condition_entity;
           if (condId) entities.add(condId);
+          if (item?.visibility) {
+            extractConditionEntities(item.visibility).forEach((cid) => entities.add(cid));
+          }
         });
       }
     }
@@ -276,6 +338,9 @@ var CustomRoomCard = class extends HTMLElement {
     });
   }
   _showChip(chip) {
+    if (chip.visibility && Array.isArray(chip.visibility)) {
+      return checkConditionsMet(this._hass, chip.visibility);
+    }
     if (!chip.condition_entity) return true;
     const stateObj = this._hass.states[chip.condition_entity];
     if (!stateObj) return false;
@@ -283,6 +348,9 @@ var CustomRoomCard = class extends HTMLElement {
     return chip.condition_invert ? !isMatched : isMatched;
   }
   _showRoom(room) {
+    if (room.visibility && Array.isArray(room.visibility)) {
+      return checkConditionsMet(this._hass, room.visibility);
+    }
     if (!room.condition_entity) return true;
     const stateObj = this._hass.states[room.condition_entity];
     if (!stateObj) return false;
@@ -854,23 +922,31 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const summary = document.createElement("summary");
       summary.textContent = "Condizioni di visibilit\xE0";
       details.append(summary);
-      const condGrid = document.createElement("div");
-      condGrid.className = "chip-conditions-grid";
-      const condEntity = document.createElement("ha-entity-picker");
-      condEntity.hass = this._hass;
-      condEntity.label = "Entit\xE0 condizione";
-      condEntity.value = chip.condition_entity || "";
-      this._handlePicker(condEntity, (value) => this._updateChip(roomIndex, category, entityIndex, { condition_entity: value || void 0 }));
-      const condState = document.createElement("ha-input");
-      condState.label = "Stato atteso";
-      condState.value = chip.condition_state || "on";
-      condState.addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { condition_state: event.currentTarget.value || void 0 }));
-      const condInvertDiv = document.createElement("div");
-      condInvertDiv.className = "field";
-      condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`;
-      condInvertDiv.querySelector("#invert").addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { condition_invert: event.currentTarget.checked || void 0 }));
-      condGrid.append(condEntity, condState, condInvertDiv);
-      details.append(condGrid);
+      const visibility = chip.visibility || (chip.condition_entity ? [
+        chip.condition_invert ? {
+          condition: "state",
+          entity: chip.condition_entity,
+          state_not: chip.condition_state || "on"
+        } : {
+          condition: "state",
+          entity: chip.condition_entity,
+          state: chip.condition_state || "on"
+        }
+      ] : []);
+      const condSelector = document.createElement("ha-selector");
+      condSelector.hass = this._hass;
+      condSelector.label = "Condizioni";
+      condSelector.selector = { condition: {} };
+      condSelector.value = visibility;
+      this._handlePicker(condSelector, (value) => {
+        this._updateChip(roomIndex, category, entityIndex, {
+          visibility: value && value.length > 0 ? value : void 0,
+          condition_entity: void 0,
+          condition_state: void 0,
+          condition_invert: void 0
+        });
+      }, true);
+      details.append(condSelector);
       container.append(details);
       panel.append(container);
     };
@@ -1168,23 +1244,31 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const summary = document.createElement("summary");
       summary.textContent = "Condizioni di visibilit\xE0 stanza";
       details.append(summary);
-      const condGrid = document.createElement("div");
-      condGrid.className = "chip-conditions-grid";
-      const condEntity = document.createElement("ha-entity-picker");
-      condEntity.hass = this._hass;
-      condEntity.label = "Entit\xE0 condizione";
-      condEntity.value = room.condition_entity || "";
-      this._handlePicker(condEntity, (value) => this._updateRoom(index, { condition_entity: value || void 0 }));
-      const condState = document.createElement("ha-input");
-      condState.label = "Stato atteso";
-      condState.value = room.condition_state || "on";
-      condState.addEventListener("change", (event) => this._updateRoom(index, { condition_state: event.currentTarget.value || void 0 }));
-      const condInvertDiv = document.createElement("div");
-      condInvertDiv.className = "field";
-      condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${room.condition_invert ? "checked" : ""}></ha-switch>`;
-      condInvertDiv.querySelector("#invert").addEventListener("change", (event) => this._updateRoom(index, { condition_invert: event.currentTarget.checked || void 0 }));
-      condGrid.append(condEntity, condState, condInvertDiv);
-      details.append(condGrid);
+      const visibility = room.visibility || (room.condition_entity ? [
+        room.condition_invert ? {
+          condition: "state",
+          entity: room.condition_entity,
+          state_not: room.condition_state || "on"
+        } : {
+          condition: "state",
+          entity: room.condition_entity,
+          state: room.condition_state || "on"
+        }
+      ] : []);
+      const condSelector = document.createElement("ha-selector");
+      condSelector.hass = this._hass;
+      condSelector.label = "Condizioni";
+      condSelector.selector = { condition: {} };
+      condSelector.value = visibility;
+      this._handlePicker(condSelector, (value) => {
+        this._updateRoom(index, {
+          visibility: value && value.length > 0 ? value : void 0,
+          condition_entity: void 0,
+          condition_state: void 0,
+          condition_invert: void 0
+        });
+      }, true);
+      details.append(condSelector);
       container.insertBefore(details, container.querySelector(".room-actions"));
       const up = container.querySelector("[data-up]");
       up.disabled = index === 0;
