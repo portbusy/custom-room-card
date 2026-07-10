@@ -42,7 +42,9 @@ Un tap su una luce la accende/spegne; il tap sulle altre categorie apre i dettag
 ## Sviluppo
 
 ```sh
+npm install
+npm run build
 npm run check
 ```
 
-La risorsa HACS è `custom-room-card.js`; il file importa il sorgente locale, quindi entrambi devono essere inclusi nella release.
+La risorsa HACS è il bundle monofile `custom-room-card.js`. Dopo ogni modifica al sorgente, esegui `npm run build` prima di pubblicare una release.

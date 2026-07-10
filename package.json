@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "esbuild src/custom-room-card.js --bundle --format=esm --target=es2022 --outfile=custom-room-card.js",
     "check": "node --check custom-room-card.js && node --check src/custom-room-card.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
   }
 }
