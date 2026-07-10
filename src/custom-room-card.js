@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.4";
+const VERSION = "0.3.5";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -493,7 +493,12 @@ class CustomRoomCard extends HTMLElement {
     });
   }
   _room(room, ids, roomIndex) {
-    const area = this._hass.areas?.[room.area]; const title = this._renderedTemplates?.[`room-${roomIndex}-title`] || room.title || area?.name || room.area;
+    const area = this._hass.areas?.[room.area];
+    const titleKey = `room-${roomIndex}-title`;
+    const hasTitleTemplate = room.title && (room.title.includes("{{") || room.title.includes("{%"));
+    const title = hasTitleTemplate
+      ? (this._renderedTemplates?.[titleKey] !== undefined ? this._renderedTemplates[titleKey] : "")
+      : (room.title || area?.name || room.area);
     const temp = room.temperature_entity ? this._hass.states[room.temperature_entity] : this._sensor(ids, ["temperature"]);
     const humidity = room.humidity_entity ? this._hass.states[room.humidity_entity] : this._sensor(ids, ["humidity"]);
     const lux = room.illuminance_entity ? this._hass.states[room.illuminance_entity] : this._sensor(ids, ["illuminance"]);
@@ -524,7 +529,11 @@ class CustomRoomCard extends HTMLElement {
     if (this._config.show_entity_icons && stateObj?.attributes?.icon) {
       icon = stateObj.attributes.icon;
     }
-    const label = this._renderedTemplates?.[`${chip.roomIndex}-${chip.category}-${chip.chipIndex}`] || chip.name || entityName(this._hass, id);
+    const templateKey = `${chip.roomIndex}-${chip.category}-${chip.chipIndex}`;
+    const hasTemplate = chip.name && (chip.name.includes("{{") || chip.name.includes("{%"));
+    const label = hasTemplate 
+      ? (this._renderedTemplates?.[templateKey] !== undefined ? this._renderedTemplates[templateKey] : "") 
+      : (chip.name || entityName(this._hass, id));
     return `<button class="chip ${active ? "active" : ""}" style="--chip-active:${escape(chip.color || "#ffb300")}" data-entity="${escape(id)}" data-domain="${escape(domain)}" data-room-index="${chip.roomIndex}" data-category="${escape(chip.category)}" data-chip-index="${chip.chipIndex}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(label)}</span></button>`;
   }
   _fire(type, detail) { this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true })); }
