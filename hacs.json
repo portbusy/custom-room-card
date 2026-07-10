@@ -1,0 +1,6 @@
+{
+  "name": "Custom Room Card",
+  "render_readme": true,
+  "content_in_root": true,
+  "filename": "custom-room-card.js"
+}
