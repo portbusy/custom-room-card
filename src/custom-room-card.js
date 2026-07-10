@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.0";
+const VERSION = "0.3.1";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -39,7 +39,7 @@ function defaultColor(name = "") {
 }
 
 class CustomRoomCard extends HTMLElement {
-  constructor() { super(); this.attachShadow({ mode: "open" }); this._clock = null; }
+  constructor() { super(); this.attachShadow({ mode: "open" }); this._clock = null; this._templateSubs = {}; this._renderedTemplates = {}; }
   static getConfigElement() { return document.createElement("custom-room-card-editor"); }
   static getStubConfig(hass) { const area = Object.keys(hass?.areas || {})[0]; return { type: `custom:${CARD_TAG}`, sort_by_motion: false, rooms: area ? [{ area, entities: {} }] : [] }; }
   setConfig(config) {
@@ -52,7 +52,13 @@ class CustomRoomCard extends HTMLElement {
   }
   set hass(hass) { this._hass = hass; this._render(); }
   connectedCallback() { this._clock = window.setInterval(() => this._render(), 60000); }
-  disconnectedCallback() { if (this._clock) window.clearInterval(this._clock); this._clock = null; }
+  disconnectedCallback() {
+    if (this._clock) window.clearInterval(this._clock);
+    this._clock = null;
+    Object.values(this._templateSubs).forEach((sub) => { if (typeof sub.unsub === "function") sub.unsub(); });
+    this._templateSubs = {};
+    this._renderedTemplates = {};
+  }
   getCardSize() { return Math.max(2, (this._config?.rooms?.length || 1) * 2); }
   _areaIds(area) {
     const devices = this._hass.devices || {};
@@ -75,6 +81,71 @@ class CustomRoomCard extends HTMLElement {
       const ma = this._motion(a.room, a.ids); const mb = this._motion(b.room, b.ids);
       if (on(ma) !== on(mb)) return on(mb) - on(ma);
       return new Date(mb?.last_changed || 0) - new Date(ma?.last_changed || 0);
+    });
+  }
+  _updateTemplateSubscriptions() {
+    if (!this._hass || !this._config) return;
+    const cardType = this._config.card_type || "rooms";
+    const activeKeys = new Set();
+    
+    const checkChip = (chip, roomIndex, category, chipIndex) => {
+      const key = `${roomIndex}-${category}-${chipIndex}`;
+      const templateStr = chip.name;
+      const isTemplate = templateStr && (templateStr.includes("{{") || templateStr.includes("{%"));
+      
+      if (isTemplate) {
+        activeKeys.add(key);
+        if (!this._templateSubs[key] || this._templateSubs[key].template !== templateStr) {
+          if (this._templateSubs[key] && typeof this._templateSubs[key].unsub === "function") {
+            this._templateSubs[key].unsub();
+          }
+          try {
+            const unsub = this._hass.connection.subscribeMessage(
+              (output) => {
+                if (output && output.result !== undefined && this._renderedTemplates[key] !== output.result) {
+                  this._renderedTemplates[key] = output.result;
+                  this._render();
+                }
+              },
+              { type: "render_template", template: templateStr }
+            );
+            this._templateSubs[key] = { template: templateStr, unsub };
+          } catch (e) {
+            console.error("Error subscribing to template", e);
+          }
+        }
+      }
+    };
+
+    if (cardType === "rooms") {
+      (this._config.rooms || []).forEach((room, roomIndex) => {
+        const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
+        const order = this._config.category_order || defaultOrder;
+        order.forEach((category) => {
+          const rawSelected = room.entities?.[category];
+          const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
+          selectedArray.forEach((item, chipIndex) => {
+            const chip = typeof item === "string" ? { entity: item } : item;
+            checkChip(chip, roomIndex, category, chipIndex);
+          });
+        });
+      });
+    } else {
+      (this._config.chips || []).forEach((item, chipIndex) => {
+        const chip = typeof item === "string" ? { entity: item } : item;
+        checkChip(chip, 0, "weather", chipIndex);
+      });
+    }
+    
+    // Clean up stale subscriptions
+    Object.keys(this._templateSubs).forEach((key) => {
+      if (!activeKeys.has(key)) {
+        if (typeof this._templateSubs[key].unsub === "function") {
+          this._templateSubs[key].unsub();
+        }
+        delete this._templateSubs[key];
+        delete this._renderedTemplates[key];
+      }
     });
   }
   _showChip(chip) {
@@ -170,6 +241,7 @@ class CustomRoomCard extends HTMLElement {
   }
   _render() {
     if (!this._hass || !this._config) return;
+    this._updateTemplateSubscriptions();
     const cardType = this._config.card_type || "rooms";
     
     if (cardType === "rooms") {
@@ -291,7 +363,8 @@ class CustomRoomCard extends HTMLElement {
     if (this._config.show_entity_icons && stateObj?.attributes?.icon) {
       icon = stateObj.attributes.icon;
     }
-    return `<button class="chip ${active ? "active" : ""}" style="--chip-active:${escape(chip.color || "#ffb300")}" data-entity="${escape(id)}" data-domain="${escape(domain)}" data-room-index="${chip.roomIndex}" data-category="${escape(chip.category)}" data-chip-index="${chip.chipIndex}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(chip.name || entityName(this._hass, id))}</span></button>`;
+    const label = this._renderedTemplates?.[`${chip.roomIndex}-${chip.category}-${chip.chipIndex}`] || chip.name || entityName(this._hass, id);
+    return `<button class="chip ${active ? "active" : ""}" style="--chip-active:${escape(chip.color || "#ffb300")}" data-entity="${escape(id)}" data-domain="${escape(domain)}" data-room-index="${chip.roomIndex}" data-category="${escape(chip.category)}" data-chip-index="${chip.chipIndex}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(label)}</span></button>`;
   }
   _fire(type, detail) { this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true })); }
 }
