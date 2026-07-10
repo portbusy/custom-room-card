@@ -25,7 +25,7 @@ const CARD_STYLE = `
   :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
 `;
 const EDITOR_STYLE = `
-  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}@media(max-width:520px){.fields{grid-template-columns:1fr}}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px}
+  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}@media(max-width:520px){.fields{grid-template-columns:1fr}}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px}.category-order-section{margin-top:4px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-order-section h5{margin:0 0 8px 0;font-size:0.85em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px}.category-order-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-bottom:1px solid var(--divider-color)}.category-order-row:last-child{border-bottom:none}.category-order-info{display:flex;align-items:center;gap:8px;font-size:0.9em;font-weight:500}.category-order-info ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.category-order-actions{display:flex;align-items:center;gap:4px}.category-order-actions ha-icon-button{--mdc-icon-button-size:28px;--mdc-icon-size:18px}
 `;
 
 function defaultColor(name = "") {
@@ -84,7 +84,11 @@ class CustomRoomCard extends HTMLElement {
     return chip.condition_invert ? !isMatched : isMatched;
   }
   _chips(room, roomIndex) {
-    return Object.entries(room.entities || {}).flatMap(([category, selected]) => {
+    const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
+    const order = this._config.category_order || defaultOrder;
+    return order.flatMap((category) => {
+      const selected = room.entities?.[category];
+      if (!selected) return [];
       const domains = CATEGORIES[category]?.domains || [CATEGORIES[category]?.domain];
       const selectedArray = Array.isArray(selected) ? selected : (selected ? [selected] : []);
       return selectedArray
@@ -356,6 +360,15 @@ class CustomRoomCardEditor extends HTMLElement {
 
     panel.append(container); holder.append(panel);
   }
+  _moveCategory(index, direction) {
+    const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
+    const order = [...(this._config.category_order || defaultOrder)];
+    const target = index + direction;
+    if (target < 0 || target >= order.length) return;
+    [order[index], order[target]] = [order[target], order[index]];
+    this._emit({ ...this._config, category_order: order });
+    this._render();
+  }
   _render() {
     if (!this._hass || !this._config) return;
     this._isUpdating = false;
@@ -368,13 +381,36 @@ class CustomRoomCardEditor extends HTMLElement {
       this.style.minHeight = `${currentHeight}px`;
     }
     
+    const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
+    const order = this._config.category_order || defaultOrder;
+    
     if (!this.shadowRoot.querySelector(".editor")) {
-      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div>`;
+      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div class="category-order-section"><h5>Ordinamento categorie</h5><div id="category-order-list"></div></div><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div>`;
       this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.currentTarget.checked }));
       this.shadowRoot.querySelector("#add").addEventListener("click", () => { this._emit({ ...this._config, rooms: [...this._config.rooms, { entities: {} }] }); this._render(); });
     } else {
       const sortSwitch = this.shadowRoot.querySelector("#sort");
       if (sortSwitch) sortSwitch.checked = !!this._config.sort_by_motion;
+    }
+    
+    // Render the category order list
+    const orderList = this.shadowRoot.querySelector("#category-order-list");
+    if (orderList) {
+      orderList.innerHTML = "";
+      order.forEach((key, idx) => {
+        const meta = CATEGORIES[key];
+        if (!meta) return;
+        const row = document.createElement("div");
+        row.className = "category-order-row";
+        row.innerHTML = `<div class="category-order-info"><ha-icon icon="${meta.icon}"></ha-icon><span>${meta.label}</span></div><div class="category-order-actions"><ha-icon-button data-up="${idx}" label="Sposta in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down="${idx}" label="Sposta in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button></div>`;
+        const upBtn = row.querySelector('[data-up]');
+        const downBtn = row.querySelector('[data-down]');
+        upBtn.disabled = idx === 0;
+        downBtn.disabled = idx === order.length - 1;
+        upBtn.addEventListener("click", () => this._moveCategory(idx, -1));
+        downBtn.addEventListener("click", () => this._moveCategory(idx, 1));
+        orderList.append(row);
+      });
     }
     
     const roomsContainer = this.shadowRoot.querySelector("#rooms");
@@ -402,7 +438,12 @@ class CustomRoomCardEditor extends HTMLElement {
     const tempPicker = container.querySelector("[data-temperature]"); tempPicker.hass = this._hass; tempPicker.value = room.temperature_entity || ""; tempPicker.includeDomains = ["sensor"]; tempPicker.includeDeviceClasses = ["temperature"]; tempPicker.allowCustomEntity = true; this._handlePicker(tempPicker, (value) => this._updateRoom(index, { temperature_entity: value || undefined }));
     const humPicker = container.querySelector("[data-humidity]"); humPicker.hass = this._hass; humPicker.value = room.humidity_entity || ""; humPicker.includeDomains = ["sensor"]; humPicker.includeDeviceClasses = ["humidity"]; humPicker.allowCustomEntity = true; this._handlePicker(humPicker, (value) => this._updateRoom(index, { humidity_entity: value || undefined }));
     const luxPicker = container.querySelector("[data-illuminance]"); luxPicker.hass = this._hass; luxPicker.value = room.illuminance_entity || ""; luxPicker.includeDomains = ["sensor"]; luxPicker.includeDeviceClasses = ["illuminance"]; luxPicker.allowCustomEntity = true; this._handlePicker(luxPicker, (value) => this._updateRoom(index, { illuminance_entity: value || undefined }));
-    Object.entries(CATEGORIES).forEach(([key, meta]) => {
+    
+    const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
+    const order = this._config.category_order || defaultOrder;
+    order.forEach((key) => {
+      const meta = CATEGORIES[key];
+      if (!meta) return;
       const category = document.createElement("section");
       category.className = "category";
       category.innerHTML = `<div class="category-header"><ha-icon icon="${meta.icon}"></ha-icon><span class="category-title">${meta.label}</span></div>`;
