@@ -1,6 +1,6 @@
 // src/custom-room-card.js
 var CARD_TAG = "custom-room-card";
-var VERSION = "0.3.24";
+var VERSION = "0.3.25";
 var CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -109,6 +109,22 @@ function extractConditionEntities(conditions) {
     }
   });
   return entities;
+}
+function sanitizeVisibilityConditions(conditions) {
+  if (!conditions) return [];
+  const arr = Array.isArray(conditions) ? conditions : [conditions];
+  return arr.map((cond) => {
+    if (!cond) return cond;
+    const newCond = { ...cond };
+    if (newCond.entity) {
+      newCond.entity_id = newCond.entity;
+      delete newCond.entity;
+    }
+    if (newCond.conditions) {
+      newCond.conditions = sanitizeVisibilityConditions(newCond.conditions);
+    }
+    return newCond;
+  });
 }
 var CustomRoomCard = class extends HTMLElement {
   constructor() {
@@ -961,22 +977,22 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const summary = document.createElement("summary");
       summary.textContent = "Condizioni di visibilit\xE0";
       details.append(summary);
-      const visibility = chip.visibility || (chip.condition_entity ? [
+      const visibility = sanitizeVisibilityConditions(chip.visibility || (chip.condition_entity ? [
         chip.condition_invert ? {
           condition: "state",
-          entity: chip.condition_entity,
+          entity_id: chip.condition_entity,
           state_not: chip.condition_state || "on"
         } : {
           condition: "state",
-          entity: chip.condition_entity,
+          entity_id: chip.condition_entity,
           state: chip.condition_state || "on"
         }
-      ] : []);
+      ] : []));
       const condSelector = document.createElement("ha-selector");
       condSelector.hass = this._hass;
       condSelector.label = "Condizioni";
       condSelector.selector = { condition: {} };
-      condSelector.value = visibility ? Array.isArray(visibility) ? visibility : [visibility] : [];
+      condSelector.value = visibility;
       this._handlePicker(condSelector, (value) => {
         const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateChip(roomIndex, category, entityIndex, {
@@ -1285,22 +1301,22 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const summary = document.createElement("summary");
       summary.textContent = "Condizioni di visibilit\xE0 stanza";
       details.append(summary);
-      const visibility = room.visibility || (room.condition_entity ? [
+      const visibility = sanitizeVisibilityConditions(room.visibility || (room.condition_entity ? [
         room.condition_invert ? {
           condition: "state",
-          entity: room.condition_entity,
+          entity_id: room.condition_entity,
           state_not: room.condition_state || "on"
         } : {
           condition: "state",
-          entity: room.condition_entity,
+          entity_id: room.condition_entity,
           state: room.condition_state || "on"
         }
-      ] : []);
+      ] : []));
       const condSelector = document.createElement("ha-selector");
       condSelector.hass = this._hass;
       condSelector.label = "Condizioni";
       condSelector.selector = { condition: {} };
-      condSelector.value = visibility ? Array.isArray(visibility) ? visibility : [visibility] : [];
+      condSelector.value = visibility;
       this._handlePicker(condSelector, (value) => {
         const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateRoom(index, {
