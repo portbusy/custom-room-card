@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.16";
+const VERSION = "0.3.17";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -57,6 +57,7 @@ class CustomRoomCard extends HTMLElement {
     const cardType = this._config.card_type || "rooms";
     if (cardType === "rooms") {
       (this._config.rooms || []).forEach(room => {
+        if (room.condition_entity) entities.add(room.condition_entity);
         if (room.temperature_entity) entities.add(room.temperature_entity);
         if (room.humidity_entity) entities.add(room.humidity_entity);
         if (room.illuminance_entity) entities.add(room.illuminance_entity);
@@ -263,6 +264,13 @@ class CustomRoomCard extends HTMLElement {
     const isMatched = stateObj.state === (chip.condition_state || "on");
     return chip.condition_invert ? !isMatched : isMatched;
   }
+  _showRoom(room) {
+    if (!room.condition_entity) return true;
+    const stateObj = this._hass.states[room.condition_entity];
+    if (!stateObj) return false;
+    const isMatched = stateObj.state === (room.condition_state || "on");
+    return room.condition_invert ? !isMatched : isMatched;
+  }
   _chips(room, roomIndex) {
     const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
     const order = this._config.category_order || defaultOrder;
@@ -355,7 +363,7 @@ class CustomRoomCard extends HTMLElement {
     const cardType = this._config.card_type || "rooms";
     
     if (cardType === "rooms") {
-      const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })));
+      const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })).filter(({ room }) => this._showRoom(room)));
       const newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
       if (this._oldBodyHTML !== newHTML) {
         this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${newHTML}`;
@@ -1030,6 +1038,16 @@ class CustomRoomCardEditor extends HTMLElement {
         selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, index, key, entityIndex));
         this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => this._addChip(index, key, value));
       });
+      const details = document.createElement("details");
+      details.setAttribute("data-details-id", `room-${index}-visibility`);
+      const summary = document.createElement("summary"); summary.textContent = "Condizioni di visibilità stanza"; details.append(summary);
+      const condGrid = document.createElement("div"); condGrid.className = "chip-conditions-grid";
+      const condEntity = document.createElement("ha-entity-picker"); condEntity.hass = this._hass; condEntity.label = "Entità condizione"; condEntity.value = room.condition_entity || ""; this._handlePicker(condEntity, (value) => this._updateRoom(index, { condition_entity: value || undefined }));
+      const condState = document.createElement("ha-input"); condState.label = "Stato atteso"; condState.value = room.condition_state || "on"; condState.addEventListener("change", (event) => this._updateRoom(index, { condition_state: event.currentTarget.value || undefined }));
+      const condInvertDiv = document.createElement("div"); condInvertDiv.className = "field"; condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${room.condition_invert ? "checked" : ""}></ha-switch>`; condInvertDiv.querySelector("#invert").addEventListener("change", (event) => this._updateRoom(index, { condition_invert: event.currentTarget.checked || undefined }));
+      condGrid.append(condEntity, condState, condInvertDiv); details.append(condGrid);
+      container.insertBefore(details, container.querySelector(".room-actions"));
+
       const up = container.querySelector("[data-up]"); up.disabled = index === 0; up.addEventListener("click", () => this._moveRoom(index, -1));
       const down = container.querySelector("[data-down]"); down.disabled = index === this._config.rooms.length - 1; down.addEventListener("click", () => this._moveRoom(index, 1));
       container.querySelector("[data-remove]").addEventListener("click", () => { this._emit({ ...this._config, rooms: this._config.rooms.filter((_, i) => i !== index) }); this._render(); });
