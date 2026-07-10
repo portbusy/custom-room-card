@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.25";
+const VERSION = "0.3.26";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -100,6 +100,23 @@ function checkConditionsMet(hass, conditions) {
       return window.matchMedia(cond.media_query).matches;
     }
     
+    if (cond.condition === "location") {
+      if (!cond.locations) return false;
+      const targetEntityId = cond.entity_id || cond.entity;
+      let stateObj = null;
+      if (targetEntityId) {
+        stateObj = hass.states[targetEntityId];
+      } else if (hass.user) {
+        stateObj = Object.values(hass.states).find(
+          (s) =>
+            s.entity_id.startsWith("person.") &&
+            s.attributes.user_id === hass.user.id
+        );
+      }
+      if (!stateObj) return false;
+      return cond.locations.includes(stateObj.state);
+    }
+    
     return true;
   });
 }
@@ -154,6 +171,19 @@ class CustomRoomCard extends HTMLElement {
   _updateMonitoredEntities() {
     const entities = new Set();
     if (!this._config) return;
+    
+    // Monitora la persona dell'utente corrente per cambi di posizione reattivi
+    if (this._hass && this._hass.user) {
+      const personEntity = Object.values(this._hass.states).find(
+        (s) =>
+          s.entity_id.startsWith("person.") &&
+          s.attributes.user_id === this._hass.user.id
+      );
+      if (personEntity) {
+        entities.add(personEntity.entity_id);
+      }
+    }
+
     const cardType = this._config.card_type || "rooms";
     if (cardType === "rooms") {
       (this._config.rooms || []).forEach(room => {
