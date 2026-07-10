@@ -28,7 +28,7 @@ var CARD_STYLE = `
   :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{color:rgb(255 255 255 / 75%);font-size:.9em}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:8px;min-height:36px;max-width:100%;padding:0 14px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .9em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:21px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}
 `;
 var EDITOR_STYLE = `
-  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:12px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px}.category-title{font-weight:500}.entity-row{display:grid;gap:8px;padding:10px;border:1px solid var(--divider-color);border-radius:8px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.chip-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(max-width:520px){.fields,.chip-options{grid-template-columns:1fr}}
+  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:12px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px}.category-title{font-weight:500}.entity-row{display:grid;gap:8px;padding:10px;border:1px solid var(--divider-color);border-radius:8px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.chip-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}@media(max-width:520px){.fields,.chip-options{grid-template-columns:1fr}}
 `;
 function defaultColor(name = "") {
   const n = name.toLowerCase();
@@ -81,6 +81,17 @@ var CustomRoomCard = class extends HTMLElement {
   _motion(room, ids) {
     return room.motion_entity ? this._hass.states[room.motion_entity] : this._sensor(ids, ["motion", "occupancy", "presence"]);
   }
+  _opening(room, ids) {
+    return room.opening_entity ? this._hass.states[room.opening_entity] : this._sensor(ids, ["opening", "door", "window"]);
+  }
+  _openingIcon(opening) {
+    if (!opening) return "";
+    const active = on(opening);
+    const deviceClass = opening.attributes?.device_class;
+    if (deviceClass === "door") return active ? "mdi:door-open" : "mdi:door-closed";
+    if (deviceClass === "garage_door") return active ? "mdi:garage-open" : "mdi:garage";
+    return active ? "mdi:window-open-variant" : "mdi:window-closed-variant";
+  }
   _sort(rooms) {
     if (!this._config.sort_by_motion) return rooms;
     return [...rooms].sort((a, b) => {
@@ -117,9 +128,9 @@ var CustomRoomCard = class extends HTMLElement {
     const humidity = this._sensor(ids, ["humidity"]);
     const lux = this._sensor(ids, ["illuminance"]);
     const motion = this._motion(room, ids);
-    const opening = this._sensor(ids, ["opening", "door", "window"]);
+    const opening = this._opening(room, ids);
     const metrics = [temp && `${escape(number(temp.state, 1) ?? temp.state)}\xB0C`, humidity && `${escape(number(humidity.state) ?? humidity.state)}%`, lux && `${escape(number(lux.state) ?? lux.state)} lx`].filter(Boolean);
-    const status = [motion && `<ha-icon class="${on(motion) ? "active" : ""}" icon="mdi:circle"></ha-icon>`, opening && `<ha-icon class="${on(opening) ? "active" : ""}" icon="mdi:${on(opening) ? "window-open-variant" : "window-closed-variant"}"></ha-icon>`].filter(Boolean).join("");
+    const status = [motion && `<ha-icon class="${on(motion) ? "active" : ""}" icon="mdi:circle"></ha-icon>`, opening && `<ha-icon class="${on(opening) ? "active" : ""}" icon="${escape(this._openingIcon(opening))}"></ha-icon>`].filter(Boolean).join("");
     const chips = this._chips(room);
     const color = room.color || defaultColor(title);
     const lastMotion = motion ? elapsed(motion.last_changed) : "";
@@ -200,10 +211,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
     picker.value = chip.entity;
     picker.includeDomains = domains;
     picker.allowCustomEntity = true;
-    this._handlePicker(picker, (value) => value ? onChange({ ...chip, entity: value }) : onRemove());
+    this._handlePicker(picker, (value) => value ? onChange({ ...chip, entity: value }) : onRemove(), true);
     const remove = document.createElement("ha-icon-button");
-    remove.icon = "mdi:close";
     remove.label = "Rimuovi entit\xE0";
+    const removeIcon = document.createElement("ha-icon");
+    removeIcon.icon = "mdi:close";
+    remove.append(removeIcon);
     remove.addEventListener("click", () => {
       onRemove();
       this._render();
@@ -215,18 +228,23 @@ var CustomRoomCardEditor = class extends HTMLElement {
     const name = document.createElement("ha-input");
     name.label = "Etichetta";
     name.value = chip.name || "";
-    name.addEventListener("input", (event) => onChange({ ...chip, name: event.target.value || void 0 }));
+    name.addEventListener("change", (event) => onChange({ ...chip, name: event.target.value || void 0 }));
     const icon = document.createElement("ha-icon-picker");
     icon.hass = this._hass;
     icon.label = "Icona";
     icon.value = chip.icon || "";
-    this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || void 0 }));
+    this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || void 0 }), true);
+    const activeIcon = document.createElement("ha-icon-picker");
+    activeIcon.hass = this._hass;
+    activeIcon.label = "Icona attiva";
+    activeIcon.value = chip.active_icon || "";
+    this._handlePicker(activeIcon, (value) => onChange({ ...chip, active_icon: value || void 0 }), true);
     const color = document.createElement("ha-selector");
     color.hass = this._hass;
     color.selector = { ui_color: {} };
     color.value = chip.color || "#ffb300";
-    this._handlePicker(color, (value) => onChange({ ...chip, color: value || void 0 }));
-    options.append(name, icon, color);
+    this._handlePicker(color, (value) => onChange({ ...chip, color: value || void 0 }), true);
+    options.append(name, icon, activeIcon, color);
     row.append(options);
     holder.append(row);
   }
@@ -247,13 +265,16 @@ var CustomRoomCardEditor = class extends HTMLElement {
     panel.outlined = true;
     const container = document.createElement("section");
     container.className = "room-editor";
-    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div><div class="room-actions"><ha-icon-button data-up icon="mdi:arrow-up" label="Sposta stanza in alto"></ha-icon-button><ha-icon-button data-down icon="mdi:arrow-down" label="Sposta stanza in basso"></ha-icon-button><ha-icon-button data-remove icon="mdi:delete" label="Rimuovi stanza"></ha-icon-button></div>`;
+    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
     panel.append(container);
     parent.append(panel);
     const area = container.querySelector("[data-area]");
     area.hass = this._hass;
     area.value = room.area || "";
     this._handlePicker(area, (value) => this._updateRoom(index, { area: value || void 0 }), true);
+    const title = container.querySelector("[data-title]");
+    title.value = room.title || "";
+    title.addEventListener("change", (event) => this._updateRoom(index, { title: event.target.value || void 0 }));
     const colorHolder = container.querySelector("[data-color]");
     const color = document.createElement("ha-selector");
     color.hass = this._hass;
@@ -272,6 +293,13 @@ var CustomRoomCardEditor = class extends HTMLElement {
     motion.includeDeviceClasses = ["motion", "occupancy", "presence"];
     motion.allowCustomEntity = true;
     this._handlePicker(motion, (value) => this._updateRoom(index, { motion_entity: value || void 0 }));
+    const opening = container.querySelector("[data-opening]");
+    opening.hass = this._hass;
+    opening.value = room.opening_entity || "";
+    opening.includeDomains = ["binary_sensor"];
+    opening.includeDeviceClasses = ["opening", "door", "window"];
+    opening.allowCustomEntity = true;
+    this._handlePicker(opening, (value) => this._updateRoom(index, { opening_entity: value || void 0 }));
     Object.entries(CATEGORIES).forEach(([key, meta]) => {
       const category = document.createElement("section");
       category.className = "category";
