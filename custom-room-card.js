@@ -106,6 +106,20 @@ function checkConditionsMet(hass, conditions) {
       if (!stateObj) return false;
       return cond.locations.includes(stateObj.state);
     }
+    if (cond.condition === "zone") {
+      const entityId = cond.entity_id || cond.entity;
+      if (!entityId || !cond.zone) return false;
+      const stateObj = hass.states[entityId];
+      if (!stateObj) return false;
+      const zoneId = cond.zone;
+      const zoneState = hass.states[zoneId];
+      const zoneName = zoneState ? (zoneState.attributes.friendly_name || "").toLowerCase() : "";
+      const personState = (stateObj.state || "").toLowerCase();
+      if (zoneId === "zone.home" && personState === "home") return true;
+      if (personState === zoneId.split(".")[1]) return true;
+      if (zoneName && personState === zoneName) return true;
+      return false;
+    }
     return true;
   });
 }
