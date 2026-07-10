@@ -160,9 +160,9 @@ function sanitizeVisibilityConditions(conditions) {
   return arr.map((cond) => {
     if (!cond) return cond;
     const newCond = { ...cond };
-    if (newCond.entity) {
-      newCond.entity_id = newCond.entity;
-      delete newCond.entity;
+    if (newCond.entity_id) {
+      newCond.entity = newCond.entity_id;
+      delete newCond.entity_id;
     }
     if (newCond.conditions) {
       newCond.conditions = sanitizeVisibilityConditions(newCond.conditions);
@@ -1011,11 +1011,11 @@ class CustomRoomCardEditor extends HTMLElement {
       const visibility = sanitizeVisibilityConditions(chip.visibility || (chip.condition_entity ? [
         chip.condition_invert ? {
           condition: "state",
-          entity_id: chip.condition_entity,
+          entity: chip.condition_entity,
           state_not: chip.condition_state || "on"
         } : {
           condition: "state",
-          entity_id: chip.condition_entity,
+          entity: chip.condition_entity,
           state: chip.condition_state || "on"
         }
       ] : []));
@@ -1265,11 +1265,11 @@ class CustomRoomCardEditor extends HTMLElement {
       const visibility = sanitizeVisibilityConditions(room.visibility || (room.condition_entity ? [
         room.condition_invert ? {
           condition: "state",
-          entity_id: room.condition_entity,
+          entity: room.condition_entity,
           state_not: room.condition_state || "on"
         } : {
           condition: "state",
-          entity_id: room.condition_entity,
+          entity: room.condition_entity,
           state: room.condition_state || "on"
         }
       ] : []));
