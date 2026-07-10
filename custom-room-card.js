@@ -132,8 +132,9 @@ var CustomRoomCardEditor = class extends HTMLElement {
     this._render();
   }
   set hass(hass) {
+    const needsInitialRender = !this._hass && this._config;
     this._hass = hass;
-    this._render();
+    if (needsInitialRender) this._render();
   }
   _emit(config) {
     this._config = config;

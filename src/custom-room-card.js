@@ -100,7 +100,13 @@ class CustomRoomCardEditor extends HTMLElement {
     if (JSON.stringify(next) === JSON.stringify(this._config)) return;
     this._config = next; this._render();
   }
-  set hass(hass) { this._hass = hass; this._render(); }
+  set hass(hass) {
+    const needsInitialRender = !this._hass && this._config;
+    this._hass = hass;
+    // Home Assistant updates `hass` for every state change. Rebuilding this
+    // editor here destroys an open native entity-picker while it is searching.
+    if (needsInitialRender) this._render();
+  }
   _emit(config) { this._config = config; this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true })); }
   _updateRoom(index, changes) { const rooms = this._config.rooms.map((room, i) => i === index ? { ...room, ...changes } : room); this._emit({ ...this._config, rooms }); }
   _handlePicker(picker, callback, rerender = false) {
