@@ -269,6 +269,42 @@ var CustomRoomCardEditor = class extends HTMLElement {
     }, true);
     holder.append(picker);
   }
+  _updateChip(roomIndex, category, entityIndex, chipChanges) {
+    const rooms = this._config.rooms.map((room, rIdx) => {
+      if (rIdx !== roomIndex) return room;
+      const rawSelected = room.entities?.[category];
+      const selectedArray = Array.isArray(rawSelected) ? rawSelected : rawSelected ? [rawSelected] : [];
+      const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item);
+      const updatedEntities = selected.map((item, eIdx) => {
+        if (eIdx !== entityIndex) return item;
+        return { ...item, ...chipChanges };
+      });
+      return { ...room, entities: { ...room.entities || {}, [category]: updatedEntities } };
+    });
+    this._emit({ ...this._config, rooms });
+  }
+  _removeChip(roomIndex, category, entityIndex) {
+    const rooms = this._config.rooms.map((room, rIdx) => {
+      if (rIdx !== roomIndex) return room;
+      const rawSelected = room.entities?.[category];
+      const selectedArray = Array.isArray(rawSelected) ? rawSelected : rawSelected ? [rawSelected] : [];
+      const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item);
+      const updatedEntities = selected.filter((_, eIdx) => eIdx !== entityIndex);
+      return { ...room, entities: { ...room.entities || {}, [category]: updatedEntities } };
+    });
+    this._emit({ ...this._config, rooms });
+  }
+  _addChip(roomIndex, category, entity) {
+    const rooms = this._config.rooms.map((room, rIdx) => {
+      if (rIdx !== roomIndex) return room;
+      const rawSelected = room.entities?.[category];
+      const selectedArray = Array.isArray(rawSelected) ? rawSelected : rawSelected ? [rawSelected] : [];
+      const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item);
+      const updatedEntities = [...selected, { entity }];
+      return { ...room, entities: { ...room.entities || {}, [category]: updatedEntities } };
+    });
+    this._emit({ ...this._config, rooms });
+  }
   _saveState() {
     if (!this.shadowRoot) return { expanded: [], openDetails: [], expandedChips: [] };
     const expanded = Array.from(this.shadowRoot.querySelectorAll("ha-expansion-panel:not([data-panel-id])")).map((panel, index) => panel.expanded || panel.hasAttribute("expanded") ? index : -1).filter((index) => index !== -1);
@@ -297,7 +333,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       if (details) details.open = true;
     });
   }
-  _selectedEntityRow(holder, chip, domains, onChange, onRemove, roomIndex, category, entityIndex) {
+  _selectedEntityRow(holder, chip, domains, roomIndex, category, entityIndex) {
     const panel = document.createElement("ha-expansion-panel");
     const nameText = chip.name || (chip.entity ? entityName(this._hass, chip.entity) : "");
     panel.header = nameText || `Chip ${entityIndex + 1}`;
@@ -312,14 +348,14 @@ var CustomRoomCardEditor = class extends HTMLElement {
     picker.value = chip.entity;
     picker.includeDomains = domains;
     picker.allowCustomEntity = true;
-    this._handlePicker(picker, (value) => value ? onChange({ ...chip, entity: value }) : onRemove(), true);
+    this._handlePicker(picker, (value) => value ? this._updateChip(roomIndex, category, entityIndex, { entity: value }) : this._removeChip(roomIndex, category, entityIndex), true);
     const remove = document.createElement("ha-icon-button");
     remove.label = "Rimuovi entit\xE0";
     const removeIcon = document.createElement("ha-icon");
     removeIcon.icon = "mdi:close";
     remove.append(removeIcon);
     remove.addEventListener("click", () => {
-      onRemove();
+      this._removeChip(roomIndex, category, entityIndex);
       this._render();
     });
     main.append(picker, remove);
@@ -333,22 +369,22 @@ var CustomRoomCardEditor = class extends HTMLElement {
     const name = document.createElement("ha-input");
     name.label = "Etichetta";
     name.value = chip.name || "";
-    name.addEventListener("change", (event) => onChange({ ...chip, name: event.currentTarget.value || void 0 }));
+    name.addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { name: event.currentTarget.value || void 0 }));
     const icon = document.createElement("ha-icon-picker");
     icon.hass = this._hass;
     icon.label = "Icona";
     icon.value = chip.icon || "";
-    this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || void 0 }));
+    this._handlePicker(icon, (value) => this._updateChip(roomIndex, category, entityIndex, { icon: value || void 0 }));
     const activeIcon = document.createElement("ha-icon-picker");
     activeIcon.hass = this._hass;
     activeIcon.label = "Icona attiva";
     activeIcon.value = chip.active_icon || "";
-    this._handlePicker(activeIcon, (value) => onChange({ ...chip, active_icon: value || void 0 }));
+    this._handlePicker(activeIcon, (value) => this._updateChip(roomIndex, category, entityIndex, { active_icon: value || void 0 }));
     const color = document.createElement("ha-selector");
     color.hass = this._hass;
     color.selector = { ui_color: {} };
     color.value = chip.color || "#ffb300";
-    this._handlePicker(color, (value) => onChange({ ...chip, color: value || void 0 }));
+    this._handlePicker(color, (value) => this._updateChip(roomIndex, category, entityIndex, { color: value || void 0 }));
     appearanceGrid.append(name, icon, activeIcon, color);
     container.append(appearanceGrid);
     const actionsTitle = document.createElement("div");
@@ -362,13 +398,13 @@ var CustomRoomCardEditor = class extends HTMLElement {
     tapAction.label = "Azione tocco";
     tapAction.selector = { ui_action: {} };
     tapAction.value = chip.tap_action || { action: "more-info" };
-    this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || void 0 }));
+    this._handlePicker(tapAction, (value) => this._updateChip(roomIndex, category, entityIndex, { tap_action: value || void 0 }));
     const holdAction = document.createElement("ha-selector");
     holdAction.hass = this._hass;
     holdAction.label = "Pressione prolungata";
     holdAction.selector = { ui_action: {} };
     holdAction.value = chip.hold_action || { action: "none" };
-    this._handlePicker(holdAction, (value) => onChange({ ...chip, hold_action: value || void 0 }));
+    this._handlePicker(holdAction, (value) => this._updateChip(roomIndex, category, entityIndex, { hold_action: value || void 0 }));
     actionsGrid.append(tapAction, holdAction);
     container.append(actionsGrid);
     const details = document.createElement("details");
@@ -382,15 +418,15 @@ var CustomRoomCardEditor = class extends HTMLElement {
     condEntity.hass = this._hass;
     condEntity.label = "Entit\xE0 condizione";
     condEntity.value = chip.condition_entity || "";
-    this._handlePicker(condEntity, (value) => onChange({ ...chip, condition_entity: value || void 0 }));
+    this._handlePicker(condEntity, (value) => this._updateChip(roomIndex, category, entityIndex, { condition_entity: value || void 0 }));
     const condState = document.createElement("ha-input");
     condState.label = "Stato atteso";
     condState.value = chip.condition_state || "on";
-    condState.addEventListener("change", (event) => onChange({ ...chip, condition_state: event.currentTarget.value || void 0 }));
+    condState.addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { condition_state: event.currentTarget.value || void 0 }));
     const condInvertDiv = document.createElement("div");
     condInvertDiv.className = "field";
     condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`;
-    condInvertDiv.querySelector("#invert").addEventListener("change", (event) => onChange({ ...chip, condition_invert: event.currentTarget.checked || void 0 }));
+    condInvertDiv.querySelector("#invert").addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { condition_invert: event.currentTarget.checked || void 0 }));
     condGrid.append(condEntity, condState, condInvertDiv);
     details.append(condGrid);
     container.append(details);
@@ -496,9 +532,8 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const rawSelected = room.entities?.[key];
       const selectedArray = Array.isArray(rawSelected) ? rawSelected : rawSelected ? [rawSelected] : [];
       const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
-      const set = (next) => this._updateRoom(index, { entities: { ...room.entities || {}, [key]: next } });
-      selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, (value) => set(selected.map((item, i) => i === entityIndex ? value : item)), () => set(selected.filter((_, i) => i !== entityIndex)), index, key, entityIndex));
-      this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => set([...selected, { entity: value }]));
+      selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, index, key, entityIndex));
+      this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => this._addChip(index, key, value));
     });
     const up = container.querySelector("[data-up]");
     up.disabled = index === 0;

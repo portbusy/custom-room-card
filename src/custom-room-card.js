@@ -237,6 +237,42 @@ class CustomRoomCardEditor extends HTMLElement {
     this._handlePicker(picker, (value) => { if (value) onPick(value); }, true);
     holder.append(picker);
   }
+  _updateChip(roomIndex, category, entityIndex, chipChanges) {
+    const rooms = this._config.rooms.map((room, rIdx) => {
+      if (rIdx !== roomIndex) return room;
+      const rawSelected = room.entities?.[category];
+      const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
+      const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item);
+      const updatedEntities = selected.map((item, eIdx) => {
+        if (eIdx !== entityIndex) return item;
+        return { ...item, ...chipChanges };
+      });
+      return { ...room, entities: { ...(room.entities || {}), [category]: updatedEntities } };
+    });
+    this._emit({ ...this._config, rooms });
+  }
+  _removeChip(roomIndex, category, entityIndex) {
+    const rooms = this._config.rooms.map((room, rIdx) => {
+      if (rIdx !== roomIndex) return room;
+      const rawSelected = room.entities?.[category];
+      const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
+      const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item);
+      const updatedEntities = selected.filter((_, eIdx) => eIdx !== entityIndex);
+      return { ...room, entities: { ...(room.entities || {}), [category]: updatedEntities } };
+    });
+    this._emit({ ...this._config, rooms });
+  }
+  _addChip(roomIndex, category, entity) {
+    const rooms = this._config.rooms.map((room, rIdx) => {
+      if (rIdx !== roomIndex) return room;
+      const rawSelected = room.entities?.[category];
+      const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
+      const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item);
+      const updatedEntities = [...selected, { entity }];
+      return { ...room, entities: { ...(room.entities || {}), [category]: updatedEntities } };
+    });
+    this._emit({ ...this._config, rooms });
+  }
   _saveState() {
     if (!this.shadowRoot) return { expanded: [], openDetails: [], expandedChips: [] };
     const expanded = Array.from(this.shadowRoot.querySelectorAll("ha-expansion-panel:not([data-panel-id])"))
@@ -271,7 +307,7 @@ class CustomRoomCardEditor extends HTMLElement {
       if (details) details.open = true;
     });
   }
-  _selectedEntityRow(holder, chip, domains, onChange, onRemove, roomIndex, category, entityIndex) {
+  _selectedEntityRow(holder, chip, domains, roomIndex, category, entityIndex) {
     const panel = document.createElement("ha-expansion-panel");
     const nameText = chip.name || (chip.entity ? entityName(this._hass, chip.entity) : "");
     panel.header = nameText || `Chip ${entityIndex + 1}`;
@@ -284,38 +320,38 @@ class CustomRoomCardEditor extends HTMLElement {
     const main = document.createElement("div"); main.className = "entity-main";
     const picker = document.createElement("ha-entity-picker");
     picker.hass = this._hass; picker.value = chip.entity; picker.includeDomains = domains; picker.allowCustomEntity = true;
-    this._handlePicker(picker, (value) => value ? onChange({ ...chip, entity: value }) : onRemove(), true);
+    this._handlePicker(picker, (value) => value ? this._updateChip(roomIndex, category, entityIndex, { entity: value }) : this._removeChip(roomIndex, category, entityIndex), true);
     
     const remove = document.createElement("ha-icon-button"); remove.label = "Rimuovi entità";
     const removeIcon = document.createElement("ha-icon"); removeIcon.icon = "mdi:close"; remove.append(removeIcon);
-    remove.addEventListener("click", () => { onRemove(); this._render(); });
+    remove.addEventListener("click", () => { this._removeChip(roomIndex, category, entityIndex); this._render(); });
     main.append(picker, remove); container.append(main);
 
     // Aspetto (Appearance) section
     const appearanceTitle = document.createElement("div"); appearanceTitle.className = "editor-section-title"; appearanceTitle.textContent = "Aspetto"; container.append(appearanceTitle);
     
     const appearanceGrid = document.createElement("div"); appearanceGrid.className = "chip-options";
-    const name = document.createElement("ha-input"); name.label = "Etichetta"; name.value = chip.name || ""; name.addEventListener("change", (event) => onChange({ ...chip, name: event.currentTarget.value || undefined }));
-    const icon = document.createElement("ha-icon-picker"); icon.hass = this._hass; icon.label = "Icona"; icon.value = chip.icon || ""; this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || undefined }));
-    const activeIcon = document.createElement("ha-icon-picker"); activeIcon.hass = this._hass; activeIcon.label = "Icona attiva"; activeIcon.value = chip.active_icon || ""; this._handlePicker(activeIcon, (value) => onChange({ ...chip, active_icon: value || undefined }));
-    const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = chip.color || "#ffb300"; this._handlePicker(color, (value) => onChange({ ...chip, color: value || undefined }));
+    const name = document.createElement("ha-input"); name.label = "Etichetta"; name.value = chip.name || ""; name.addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { name: event.currentTarget.value || undefined }));
+    const icon = document.createElement("ha-icon-picker"); icon.hass = this._hass; icon.label = "Icona"; icon.value = chip.icon || ""; this._handlePicker(icon, (value) => this._updateChip(roomIndex, category, entityIndex, { icon: value || undefined }));
+    const activeIcon = document.createElement("ha-icon-picker"); activeIcon.hass = this._hass; activeIcon.label = "Icona attiva"; activeIcon.value = chip.active_icon || ""; this._handlePicker(activeIcon, (value) => this._updateChip(roomIndex, category, entityIndex, { active_icon: value || undefined }));
+    const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = chip.color || "#ffb300"; this._handlePicker(color, (value) => this._updateChip(roomIndex, category, entityIndex, { color: value || undefined }));
     appearanceGrid.append(name, icon, activeIcon, color); container.append(appearanceGrid);
 
     // Azioni (Actions) section
     const actionsTitle = document.createElement("div"); actionsTitle.className = "editor-section-title"; actionsTitle.textContent = "Azioni"; container.append(actionsTitle);
     
     const actionsGrid = document.createElement("div"); actionsGrid.className = "chip-options";
-    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = chip.tap_action || { action: "more-info" }; this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || undefined }));
-    const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = chip.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => onChange({ ...chip, hold_action: value || undefined }));
+    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = chip.tap_action || { action: "more-info" }; this._handlePicker(tapAction, (value) => this._updateChip(roomIndex, category, entityIndex, { tap_action: value || undefined }));
+    const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = chip.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => this._updateChip(roomIndex, category, entityIndex, { hold_action: value || undefined }));
     actionsGrid.append(tapAction, holdAction); container.append(actionsGrid);
 
     const details = document.createElement("details");
     details.setAttribute("data-details-id", `${roomIndex}-${category}-${entityIndex}`);
     const summary = document.createElement("summary"); summary.textContent = "Condizioni di visibilità"; details.append(summary);
     const condGrid = document.createElement("div"); condGrid.className = "chip-conditions-grid";
-    const condEntity = document.createElement("ha-entity-picker"); condEntity.hass = this._hass; condEntity.label = "Entità condizione"; condEntity.value = chip.condition_entity || ""; this._handlePicker(condEntity, (value) => onChange({ ...chip, condition_entity: value || undefined }));
-    const condState = document.createElement("ha-input"); condState.label = "Stato atteso"; condState.value = chip.condition_state || "on"; condState.addEventListener("change", (event) => onChange({ ...chip, condition_state: event.currentTarget.value || undefined }));
-    const condInvertDiv = document.createElement("div"); condInvertDiv.className = "field"; condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`; condInvertDiv.querySelector("#invert").addEventListener("change", (event) => onChange({ ...chip, condition_invert: event.currentTarget.checked || undefined }));
+    const condEntity = document.createElement("ha-entity-picker"); condEntity.hass = this._hass; condEntity.label = "Entità condizione"; condEntity.value = chip.condition_entity || ""; this._handlePicker(condEntity, (value) => this._updateChip(roomIndex, category, entityIndex, { condition_entity: value || undefined }));
+    const condState = document.createElement("ha-input"); condState.label = "Stato atteso"; condState.value = chip.condition_state || "on"; condState.addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { condition_state: event.currentTarget.value || undefined }));
+    const condInvertDiv = document.createElement("div"); condInvertDiv.className = "field"; condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`; condInvertDiv.querySelector("#invert").addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { condition_invert: event.currentTarget.checked || undefined }));
     condGrid.append(condEntity, condState, condInvertDiv); details.append(condGrid); container.append(details);
 
     panel.append(container); holder.append(panel);
@@ -375,9 +411,8 @@ class CustomRoomCardEditor extends HTMLElement {
       const rawSelected = room.entities?.[key];
       const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
       const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
-      const set = (next) => this._updateRoom(index, { entities: { ...(room.entities || {}), [key]: next } });
-      selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, (value) => set(selected.map((item, i) => i === entityIndex ? value : item)), () => set(selected.filter((_, i) => i !== entityIndex)), index, key, entityIndex));
-      this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => set([...selected, { entity: value }]));
+      selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, index, key, entityIndex));
+      this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => this._addChip(index, key, value));
     });
     const up = container.querySelector("[data-up]"); up.disabled = index === 0; up.addEventListener("click", () => this._moveRoom(index, -1));
     const down = container.querySelector("[data-down]"); down.disabled = index === this._config.rooms.length - 1; down.addEventListener("click", () => this._moveRoom(index, 1));
