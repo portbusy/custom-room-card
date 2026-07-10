@@ -294,7 +294,7 @@ class CustomRoomCardEditor extends HTMLElement {
     const appearanceTitle = document.createElement("div"); appearanceTitle.className = "editor-section-title"; appearanceTitle.textContent = "Aspetto"; container.append(appearanceTitle);
     
     const appearanceGrid = document.createElement("div"); appearanceGrid.className = "chip-options";
-    const name = document.createElement("ha-textfield"); name.label = "Etichetta"; name.value = chip.name || ""; name.addEventListener("change", (event) => onChange({ ...chip, name: event.currentTarget.value || undefined }));
+    const name = document.createElement("ha-input"); name.label = "Etichetta"; name.value = chip.name || ""; name.addEventListener("change", (event) => onChange({ ...chip, name: event.currentTarget.value || undefined }));
     const icon = document.createElement("ha-icon-picker"); icon.hass = this._hass; icon.label = "Icona"; icon.value = chip.icon || ""; this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || undefined }));
     const activeIcon = document.createElement("ha-icon-picker"); activeIcon.hass = this._hass; activeIcon.label = "Icona attiva"; activeIcon.value = chip.active_icon || ""; this._handlePicker(activeIcon, (value) => onChange({ ...chip, active_icon: value || undefined }));
     const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = chip.color || "#ffb300"; this._handlePicker(color, (value) => onChange({ ...chip, color: value || undefined }));
@@ -313,7 +313,7 @@ class CustomRoomCardEditor extends HTMLElement {
     const summary = document.createElement("summary"); summary.textContent = "Condizioni di visibilità"; details.append(summary);
     const condGrid = document.createElement("div"); condGrid.className = "chip-conditions-grid";
     const condEntity = document.createElement("ha-entity-picker"); condEntity.hass = this._hass; condEntity.label = "Entità condizione"; condEntity.value = chip.condition_entity || ""; this._handlePicker(condEntity, (value) => onChange({ ...chip, condition_entity: value || undefined }));
-    const condState = document.createElement("ha-textfield"); condState.label = "Stato atteso"; condState.value = chip.condition_state || "on"; condState.addEventListener("change", (event) => onChange({ ...chip, condition_state: event.currentTarget.value || undefined }));
+    const condState = document.createElement("ha-input"); condState.label = "Stato atteso"; condState.value = chip.condition_state || "on"; condState.addEventListener("change", (event) => onChange({ ...chip, condition_state: event.currentTarget.value || undefined }));
     const condInvertDiv = document.createElement("div"); condInvertDiv.className = "field"; condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`; condInvertDiv.querySelector("#invert").addEventListener("change", (event) => onChange({ ...chip, condition_invert: event.currentTarget.checked || undefined }));
     condGrid.append(condEntity, condState, condInvertDiv); details.append(condGrid); container.append(details);
 
@@ -323,17 +323,38 @@ class CustomRoomCardEditor extends HTMLElement {
     if (!this._hass || !this._config) return;
     this._isUpdating = false;
     const state = this._saveState();
-    this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div>`;
-    const rooms = this.shadowRoot.querySelector("#rooms");
-    this._config.rooms.forEach((room, index) => this._roomEditor(rooms, room, index));
-    this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.currentTarget.checked }));
-    this.shadowRoot.querySelector("#add").addEventListener("click", () => { this._emit({ ...this._config, rooms: [...this._config.rooms, { entities: {} }] }); this._render(); });
+    
+    // Imposta minHeight per evitare il saltellamento o il reset dello scorrimento del dialog
+    const container = this.shadowRoot.querySelector(".editor");
+    const currentHeight = container ? container.offsetHeight : 0;
+    if (currentHeight) {
+      this.style.minHeight = `${currentHeight}px`;
+    }
+    
+    if (!this.shadowRoot.querySelector(".editor")) {
+      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div>`;
+      this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.currentTarget.checked }));
+      this.shadowRoot.querySelector("#add").addEventListener("click", () => { this._emit({ ...this._config, rooms: [...this._config.rooms, { entities: {} }] }); this._render(); });
+    } else {
+      const sortSwitch = this.shadowRoot.querySelector("#sort");
+      if (sortSwitch) sortSwitch.checked = !!this._config.sort_by_motion;
+    }
+    
+    const roomsContainer = this.shadowRoot.querySelector("#rooms");
+    roomsContainer.innerHTML = "";
+    this._config.rooms.forEach((room, index) => this._roomEditor(roomsContainer, room, index));
+    
     this._restoreState(state);
+    
+    // Rimuove l'altezza minima nel frame successivo
+    requestAnimationFrame(() => {
+      this.style.minHeight = "";
+    });
   }
   _roomEditor(parent, room, index) {
     const panel = document.createElement("ha-expansion-panel"); panel.header = room.title || this._hass.areas?.[room.area]?.name || `Stanza ${index + 1}`; panel.outlined = true;
     const container = document.createElement("section"); container.className = "room-editor";
-    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-textfield data-title label="Titolo"></ha-textfield></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div><div class="field"><span>Sensore luminosità</span><ha-entity-picker data-illuminance label="Luminosità"></ha-entity-picker></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
+    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div><div class="field"><span>Sensore luminosità</span><ha-entity-picker data-illuminance label="Luminosità"></ha-entity-picker></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
     panel.append(container); parent.append(panel);
     const area = container.querySelector("[data-area]"); area.hass = this._hass; area.value = room.area || ""; this._handlePicker(area, (value) => this._updateRoom(index, { area: value || undefined }), true);
     const title = container.querySelector("[data-title]"); title.value = room.title || ""; title.addEventListener("change", (event) => this._updateRoom(index, { title: event.currentTarget.value || undefined }));
