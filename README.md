@@ -35,6 +35,7 @@ show_media: true               # Predefinito: true
 show_climate: true             # Predefinito: true
 show_covers: true              # Predefinito: true
 show_lights: true              # Predefinito: true
+show_switches: false           # Predefinito: false; include switch e input_boolean
 ```
 
 Un tap su una luce la accende/spegne; il tap sulle altre categorie apre i dettagli dell'entità. Tenere premuto apre sempre i dettagli. La card gestisce anche aree ancora senza entità, senza mostrare errori.
