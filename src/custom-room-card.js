@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.22";
+const VERSION = "0.3.23";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -947,7 +947,7 @@ class CustomRoomCardEditor extends HTMLElement {
       condSelector.hass = this._hass;
       condSelector.label = "Condizioni";
       condSelector.selector = { condition: {} };
-      condSelector.value = visibility;
+      condSelector.value = visibility ? (Array.isArray(visibility) ? visibility : [visibility]) : [];
       this._handlePicker(condSelector, (value) => {
         const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateChip(roomIndex, category, entityIndex, {
@@ -1199,7 +1199,7 @@ class CustomRoomCardEditor extends HTMLElement {
       condSelector.hass = this._hass;
       condSelector.label = "Condizioni";
       condSelector.selector = { condition: {} };
-      condSelector.value = visibility;
+      condSelector.value = visibility ? (Array.isArray(visibility) ? visibility : [visibility]) : [];
       this._handlePicker(condSelector, (value) => {
         const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateRoom(index, {
