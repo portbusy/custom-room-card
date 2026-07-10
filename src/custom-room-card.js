@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.18";
+const VERSION = "0.3.19";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -835,6 +835,9 @@ class CustomRoomCardEditor extends HTMLElement {
       if (panels[index]) {
         panels[index].expanded = true;
         panels[index].setAttribute("expanded", "");
+        if (typeof panels[index].__triggerRender === "function") {
+          panels[index].__triggerRender();
+        }
       }
     });
     state.expandedChips.forEach((id) => {
@@ -842,6 +845,9 @@ class CustomRoomCardEditor extends HTMLElement {
       if (panel) {
         panel.expanded = true;
         panel.setAttribute("expanded", "");
+        if (typeof panel.__triggerRender === "function") {
+          panel.__triggerRender();
+        }
       }
     });
     state.openDetails.forEach((id) => {
@@ -933,6 +939,7 @@ class CustomRoomCardEditor extends HTMLElement {
         window.dispatchEvent(new Event("resize"));
       }, 50);
     };
+    panel.__triggerRender = triggerRender;
 
     panel.addEventListener("pointerdown", triggerRender);
     panel.addEventListener("expanded-changed", (event) => {
@@ -1185,6 +1192,7 @@ class CustomRoomCardEditor extends HTMLElement {
         window.dispatchEvent(new Event("resize"));
       }, 50);
     };
+    panel.__triggerRender = triggerRoomRender;
 
     panel.addEventListener("pointerdown", triggerRoomRender);
     panel.addEventListener("expanded-changed", (event) => {
