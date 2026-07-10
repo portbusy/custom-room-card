@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.1";
+const VERSION = "0.3.2";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -22,7 +22,7 @@ const elapsed = (changed) => {
 };
 
 const CARD_STYLE = `
-  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-card{overflow:hidden;border-radius:24px;background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);box-shadow:0 4px 20px rgba(0,0,0,0.18),0 0 0 1px rgba(91,155,213,0.2),inset 0 1px 0 rgba(255,255,255,0.08)}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:transparent;font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.72em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.72em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.82em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.82em;font-weight:500}.weather-chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:10px 16px 16px 16px;background:linear-gradient(135deg,rgba(18,38,58,0.92) 0%,rgba(20,50,75,0.88) 100%);border-radius:0 0 24px 24px}
+  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
 `;
 const EDITOR_STYLE = `
   :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}@media(max-width:520px){.fields{grid-template-columns:1fr}}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px}.category-order-section{margin-top:4px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-order-section h5{margin:0 0 8px 0;font-size:0.85em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px}.category-order-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-bottom:1px solid var(--divider-color)}.category-order-row:last-child{border-bottom:none}.category-order-info{display:flex;align-items:center;gap:8px;font-size:0.9em;font-weight:500}.category-order-info ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.category-order-actions{display:flex;align-items:center;gap:4px}.category-order-actions ha-icon-button{--mdc-icon-button-size:28px;--mdc-icon-size:18px}.editor:not(.mode-rooms) .rooms-only{display:none!important}.editor:not(.mode-weather) .weather-only{display:none!important}.weather-editor-container{display:grid;gap:16px}.controls select{padding:6px 10px;border-radius:4px;border:1px solid var(--input-outlined-idle-border-color,var(--divider-color));background:var(--card-background-color);color:var(--primary-text-color);font-family:inherit;font-size:0.9em;cursor:pointer}
@@ -201,7 +201,7 @@ class CustomRoomCard extends HTMLElement {
     const name = this._hass.user ? this._hass.user.name : "Utente";
     
     const precipColor = parseInt(precip) > 0 ? '#5b9bd5' : 'rgba(255,255,255,0.35)';
-    const umbrellaIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" style="vertical-align:middle;margin-right:3px;flex-shrink:0;"><path fill="${precipColor}" d="M12,2A10,10 0 0,1 22,12H13A1,1 0 0,0 12,13A1,1 0 0,1 10,14A1,1 0 0,0 8,13H2A10,10 0 0,1 12,2M9,17A1,1 0 0,1 10,18A2,2 0 0,0 14,18V13H12A3,3 0 0,1 9,16V17Z"/></svg>`;
+    const umbrellaIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" style="vertical-align:middle;margin-right:4px;flex-shrink:0;"><path fill="${precipColor}" d="M12,2A10,10 0 0,1 22,12H13A1,1 0 0,0 12,13A1,1 0 0,1 10,14A1,1 0 0,0 8,13H2A10,10 0 0,1 12,2M9,17A1,1 0 0,1 10,18A2,2 0 0,0 14,18V13H12A3,3 0 0,1 9,16V17Z"/></svg>`;
     
     const chipsData = (this._config.chips || [])
       .map((item, chipIndex) => {
@@ -209,17 +209,19 @@ class CustomRoomCard extends HTMLElement {
         return { ...chip, roomIndex: 0, category: "weather", chipIndex };
       })
       .filter((chip) => chip.entity && this._hass.states[chip.entity] && this._showChip(chip));
+      
+    const color = this._config.color || "#1a365d";
     
     return `
-      <div class="weather-card">
-        <button class="weather-header" aria-label="Meteo Detail">
+      <section class="room weather-room" style="--room-color:${escape(color)}">
+        <button class="header weather-header" aria-label="Meteo Detail">
           <div class="weather-greeting">${greeting}, ${name}</div>
           <div class="weather-grid">
             <div class="weather-col-left">
               <div class="weather-temp">${temp}°</div>
               <div class="weather-cond">${cond}</div>
               <div class="weather-sunset">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" style="flex-shrink:0;"><path fill="rgba(255,200,100,0.75)" d="M3,12H7A5,5 0 0,1 12,7A5,5 0 0,1 17,12H21A1,1 0 0,1 22,13A1,1 0 0,1 21,14H3A1,1 0 0,1 2,13A1,1 0 0,1 3,12M15,17A3,3 0 0,1 12,20A3,3 0 0,1 9,17H15Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" style="flex-shrink:0;"><path fill="rgba(255,200,100,0.75)" d="M3,12H7A5,5 0 0,1 12,7A5,5 0 0,1 17,12H21A1,1 0 0,1 22,13A1,1 0 0,1 21,14H3A1,1 0 0,1 2,13A1,1 0 0,1 3,12M15,17A3,3 0 0,1 12,20A3,3 0 0,1 9,17H15Z"/></svg>
                 <span>${sunset}</span>
               </div>
             </div>
@@ -235,8 +237,8 @@ class CustomRoomCard extends HTMLElement {
             </div>
           </div>
         </button>
-        ${chipsData.length ? `<div class="weather-chips">${chipsData.map((chip) => this._chip(chip)).join("")}</div>` : ""}
-      </div>
+        ${chipsData.length ? `<div class="chips">${chipsData.map((chip) => this._chip(chip)).join("")}</div>` : ""}
+      </section>
     `;
   }
   _render() {
@@ -247,7 +249,42 @@ class CustomRoomCard extends HTMLElement {
     if (cardType === "rooms") {
       const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })));
       this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style><div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
-      this.shadowRoot.querySelectorAll(".header").forEach((button) => button.addEventListener("click", () => this._fire("hass-more-info", { entityId: button.dataset.entity })));
+      this.shadowRoot.querySelectorAll(".header:not(.weather-header)").forEach((button) => {
+        const getActionConfig = () => {
+          const roomIndex = Number.parseInt(button.dataset.roomIndex);
+          const room = this._config.rooms[roomIndex];
+          return {
+            entity: room.motion_entity || (button.dataset.entity !== "" ? button.dataset.entity : undefined),
+            tap_action: room.tap_action || { action: "more-info" },
+            hold_action: room.hold_action || { action: "none" }
+          };
+        };
+        button.addEventListener("click", () => {
+          const actionConfig = getActionConfig();
+          const actionEvent = new CustomEvent("hass-action", {
+            bubbles: true,
+            composed: true,
+            detail: {
+              config: actionConfig,
+              action: "tap"
+            }
+          });
+          button.dispatchEvent(actionEvent);
+        });
+        button.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          const actionConfig = getActionConfig();
+          const actionEvent = new CustomEvent("hass-action", {
+            bubbles: true,
+            composed: true,
+            detail: {
+              config: actionConfig,
+              action: "hold"
+            }
+          });
+          button.dispatchEvent(actionEvent);
+        });
+      });
       this.shadowRoot.querySelectorAll(".status-icon, .status-metric").forEach((element) => {
         element.addEventListener("click", (event) => {
           event.stopPropagation();
@@ -257,18 +294,34 @@ class CustomRoomCard extends HTMLElement {
     } else {
       this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${this._weather()}`;
       this.shadowRoot.querySelectorAll(".weather-header").forEach((button) => {
+        const getActionConfig = () => {
+          return {
+            entity: this._config.temp_entity,
+            tap_action: this._config.tap_action || { action: "navigate", navigation_path: "#meteo" },
+            hold_action: this._config.hold_action || { action: "none" }
+          };
+        };
         button.addEventListener("click", () => {
+          const actionConfig = getActionConfig();
           const actionEvent = new CustomEvent("hass-action", {
             bubbles: true,
             composed: true,
             detail: {
-              config: {
-                tap_action: {
-                  action: "navigate",
-                  navigation_path: this._config.weather_navigation_path || "#meteo"
-                }
-              },
+              config: actionConfig,
               action: "tap"
+            }
+          });
+          button.dispatchEvent(actionEvent);
+        });
+        button.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          const actionConfig = getActionConfig();
+          const actionEvent = new CustomEvent("hass-action", {
+            bubbles: true,
+            composed: true,
+            detail: {
+              config: actionConfig,
+              action: "hold"
             }
           });
           button.dispatchEvent(actionEvent);
@@ -355,7 +408,7 @@ class CustomRoomCard extends HTMLElement {
     const isPresenceActive = motion ? on(motion) : true;
     const color = isPresenceActive ? (room.color || defaultColor(title)) : "#808080";
     const lastMotion = motion ? elapsed(motion.last_changed) : "";
-    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-entity="${escape(room.motion_entity || ids[0] || "")}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}${lastMotion ? `<span class="motion-time">${lastMotion}</span>` : ""}</span><span class="summary">${status}${metrics}</span></button>${chips.length ? `<div class="chips">${chips.map((chip) => this._chip(chip)).join("")}</div>` : `<div class="empty">Nessuna entità selezionata</div>`}</section>`;
+    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-room-index="${roomIndex}" data-entity="${escape(room.motion_entity || ids[0] || "")}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}${lastMotion ? `<span class="motion-time">${lastMotion}</span>` : ""}</span><span class="summary">${status}${metrics}</span></button>${chips.length ? `<div class="chips">${chips.map((chip) => this._chip(chip)).join("")}</div>` : `<div class="empty">Nessuna entità selezionata</div>`}</section>`;
   }
   _chip(chip) {
     const id = chip.entity; const domain = id.split(".")[0]; const category = Object.values(CATEGORIES).find((item) => item.domain === domain) || CATEGORIES.switches; const stateObj = this._hass.states[id]; const active = on(stateObj);
@@ -581,7 +634,7 @@ class CustomRoomCardEditor extends HTMLElement {
     const cardType = this._config.card_type || "rooms";
     
     if (!this.shadowRoot.querySelector(".editor")) {
-      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><div class="control-item"><span>Tipologia Card</span><select id="card-type"><option value="rooms">Stanze</option><option value="weather">Meteo</option></select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div class="control-item rooms-only"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">Usa icone reali delle entità</label></div></div><div class="category-order-section rooms-only"><h5>Ordinamento categorie</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
+      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><div class="control-item"><span>Tipologia Card</span><select id="card-type"><option value="rooms">Stanze</option><option value="weather">Meteo</option></select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">Usa icone reali delle entità</label></div></div><div class="category-order-section rooms-only"><h5>Ordinamento categorie</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
       
       const typeSelect = this.shadowRoot.querySelector("#card-type");
       typeSelect.value = cardType;
@@ -657,7 +710,9 @@ class CustomRoomCardEditor extends HTMLElement {
         <div class="field"><span>Prob. Precipitazioni</span><ha-entity-picker data-precip label="Pioggia %"></ha-entity-picker></div>
         <div class="field"><span>Icona Animata</span><ha-entity-picker data-icon label="Icona"></ha-entity-picker></div>
         <div class="field"><span>Tramonto (Sun)</span><ha-entity-picker data-sunset label="Sunset"></ha-entity-picker></div>
-        <div class="field"><span>Path Navigazione</span><ha-input data-nav label="Es. #meteo"></ha-input></div>
+        <div class="field" data-color><span>Colore base</span></div>
+        <div class="field" data-tap-action><span>Azione tocco</span></div>
+        <div class="field" data-hold-action><span>Pressione prolungata</span></div>
       </div>
       <div class="entities">
         <h4>Chips</h4>
@@ -673,7 +728,14 @@ class CustomRoomCardEditor extends HTMLElement {
     const precip = container.querySelector("[data-precip]"); precip.hass = this._hass; precip.value = this._config.precip_probability_entity || ""; this._handlePicker(precip, (value) => this._emit({ ...this._config, precip_probability_entity: value || undefined }));
     const icon = container.querySelector("[data-icon]"); icon.hass = this._hass; icon.value = this._config.weather_icon_entity || ""; this._handlePicker(icon, (value) => this._emit({ ...this._config, weather_icon_entity: value || undefined }));
     const sunset = container.querySelector("[data-sunset]"); sunset.hass = this._hass; sunset.value = this._config.sunset_entity || "sun.sun"; this._handlePicker(sunset, (value) => this._emit({ ...this._config, sunset_entity: value || undefined }));
-    const nav = container.querySelector("[data-nav]"); nav.value = this._config.weather_navigation_path || "#meteo"; nav.addEventListener("change", (event) => this._emit({ ...this._config, weather_navigation_path: event.currentTarget.value || undefined }));
+    
+    const colorHolder = container.querySelector("[data-color]"); const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = this._config.color || "#1a365d"; this._handlePicker(color, (value) => this._emit({ ...this._config, color: value })); colorHolder.append(color);
+    
+    const tapActionHolder = container.querySelector("[data-tap-action]");
+    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = this._config.tap_action || { action: "navigate", navigation_path: "#meteo" }; this._handlePicker(tapAction, (value) => this._emit({ ...this._config, tap_action: value || undefined })); tapActionHolder.append(tapAction);
+
+    const holdActionHolder = container.querySelector("[data-hold-action]");
+    const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = this._config.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => this._emit({ ...this._config, hold_action: value || undefined })); holdActionHolder.append(holdAction);
     
     const chipsList = container.querySelector("#weather-chips-list");
     const chips = this._config.chips || [];
@@ -704,7 +766,7 @@ class CustomRoomCardEditor extends HTMLElement {
     panel.append(headerSpan);
     
     const container = document.createElement("section"); container.className = "room-editor";
-    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div><div class="field"><span>Sensore luminosità</span><ha-entity-picker data-illuminance label="Luminosità"></ha-entity-picker></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
+    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div><div class="field"><span>Sensore luminosità</span><ha-entity-picker data-illuminance label="Luminosità"></ha-entity-picker></div><div class="field" data-tap-action><span>Azione tocco</span></div><div class="field" data-hold-action><span>Pressione prolungata</span></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
     panel.append(container); parent.append(panel);
     const area = container.querySelector("[data-area]"); area.hass = this._hass; area.value = room.area || ""; this._handlePicker(area, (value) => this._updateRoom(index, { area: value || undefined }), true);
     const title = container.querySelector("[data-title]"); title.value = room.title || ""; title.addEventListener("change", (event) => this._updateRoom(index, { title: event.currentTarget.value || undefined }));
@@ -715,6 +777,12 @@ class CustomRoomCardEditor extends HTMLElement {
     const tempPicker = container.querySelector("[data-temperature]"); tempPicker.hass = this._hass; tempPicker.value = room.temperature_entity || ""; tempPicker.includeDomains = ["sensor"]; tempPicker.includeDeviceClasses = ["temperature"]; tempPicker.allowCustomEntity = true; this._handlePicker(tempPicker, (value) => this._updateRoom(index, { temperature_entity: value || undefined }));
     const humPicker = container.querySelector("[data-humidity]"); humPicker.hass = this._hass; humPicker.value = room.humidity_entity || ""; humPicker.includeDomains = ["sensor"]; humPicker.includeDeviceClasses = ["humidity"]; humPicker.allowCustomEntity = true; this._handlePicker(humPicker, (value) => this._updateRoom(index, { humidity_entity: value || undefined }));
     const luxPicker = container.querySelector("[data-illuminance]"); luxPicker.hass = this._hass; luxPicker.value = room.illuminance_entity || ""; luxPicker.includeDomains = ["sensor"]; luxPicker.includeDeviceClasses = ["illuminance"]; luxPicker.allowCustomEntity = true; this._handlePicker(luxPicker, (value) => this._updateRoom(index, { illuminance_entity: value || undefined }));
+    
+    const tapActionHolder = container.querySelector("[data-tap-action]");
+    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = room.tap_action || { action: "more-info" }; this._handlePicker(tapAction, (value) => this._updateRoom(index, { tap_action: value || undefined })); tapActionHolder.append(tapAction);
+
+    const holdActionHolder = container.querySelector("[data-hold-action]");
+    const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = room.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => this._updateRoom(index, { hold_action: value || undefined })); holdActionHolder.append(holdAction);
     
     const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
     const order = this._config.category_order || defaultOrder;
