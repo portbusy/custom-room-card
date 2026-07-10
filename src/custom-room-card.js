@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.19";
+const VERSION = "0.3.20";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -44,6 +44,18 @@ function checkConditionsMet(hass, conditions) {
   return conditions.every((cond) => {
     if (!cond || !cond.condition) return true;
     
+    if (cond.condition === "and") {
+      return checkConditionsMet(hass, cond.conditions);
+    }
+    if (cond.condition === "or") {
+      const subConds = cond.conditions;
+      if (!subConds || !Array.isArray(subConds) || subConds.length === 0) return true;
+      return subConds.some((subCond) => checkConditionsMet(hass, [subCond]));
+    }
+    if (cond.condition === "not") {
+      return !checkConditionsMet(hass, Array.isArray(cond.conditions) ? cond.conditions : [cond.conditions]);
+    }
+    
     if (cond.condition === "state") {
       if (!cond.entity) return true;
       const stateObj = hass.states[cond.entity];
@@ -51,15 +63,15 @@ function checkConditionsMet(hass, conditions) {
       
       if (cond.state !== undefined) {
         if (Array.isArray(cond.state)) {
-          return cond.state.includes(state);
+          return cond.state.some(s => String(state) === String(s));
         }
-        return state === cond.state;
+        return String(state) === String(cond.state);
       }
       if (cond.state_not !== undefined) {
         if (Array.isArray(cond.state_not)) {
-          return !cond.state_not.includes(state);
+          return !cond.state_not.some(s => String(state) === String(s));
         }
-        return state !== cond.state_not;
+        return String(state) !== String(cond.state_not);
       }
       return true;
     }
@@ -94,8 +106,12 @@ function extractConditionEntities(conditions) {
   const entities = [];
   if (!conditions || !Array.isArray(conditions)) return entities;
   conditions.forEach((cond) => {
-    if (cond && cond.entity) {
+    if (!cond) return;
+    if (cond.entity) {
       entities.push(cond.entity);
+    }
+    if (cond.conditions) {
+      entities.push(...extractConditionEntities(cond.conditions));
     }
   });
   return entities;
