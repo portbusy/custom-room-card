@@ -762,6 +762,16 @@ class CustomRoomCard extends HTMLElement {
 class CustomRoomCardEditor extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: "open" }); }
   connectedCallback() {
+    if (!customElements.get("ha-card-conditions-editor")) {
+      const conditionalCard = customElements.get("hui-conditional-card");
+      if (conditionalCard && typeof conditionalCard.getConfigElement === "function") {
+        try {
+          conditionalCard.getConfigElement();
+        } catch (e) {
+          console.warn("Failed to load ha-card-conditions-editor via hui-conditional-card", e);
+        }
+      }
+    }
     this._selectListener = (event) => {
       const { type, roomIndex, category, chipIndex } = event.detail;
       this._focusEditorPanel(type, roomIndex, category, chipIndex);
@@ -1010,12 +1020,13 @@ class CustomRoomCardEditor extends HTMLElement {
         }
       ] : []));
 
-      const condSelector = document.createElement("ha-selector");
+      const condSelector = document.createElement("ha-card-conditions-editor");
       condSelector.hass = this._hass;
-      condSelector.label = "Condizioni";
-      condSelector.selector = { condition: {} };
-      condSelector.value = visibility;
-      this._handlePicker(condSelector, (value) => {
+      condSelector.conditions = visibility;
+      condSelector.addEventListener("value-changed", (event) => {
+        if (event.target !== condSelector) return;
+        const value = event.detail.value;
+        condSelector.conditions = value;
         const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateChip(roomIndex, category, entityIndex, {
           visibility: hasValue ? value : undefined,
@@ -1023,7 +1034,8 @@ class CustomRoomCardEditor extends HTMLElement {
           condition_state: undefined,
           condition_invert: undefined
         });
-      }, true);
+        this._render();
+      });
       details.append(condSelector);
       container.append(details);
 
@@ -1262,12 +1274,13 @@ class CustomRoomCardEditor extends HTMLElement {
         }
       ] : []));
 
-      const condSelector = document.createElement("ha-selector");
+      const condSelector = document.createElement("ha-card-conditions-editor");
       condSelector.hass = this._hass;
-      condSelector.label = "Condizioni";
-      condSelector.selector = { condition: {} };
-      condSelector.value = visibility;
-      this._handlePicker(condSelector, (value) => {
+      condSelector.conditions = visibility;
+      condSelector.addEventListener("value-changed", (event) => {
+        if (event.target !== condSelector) return;
+        const value = event.detail.value;
+        condSelector.conditions = value;
         const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
         this._updateRoom(index, {
           visibility: hasValue ? value : undefined,
@@ -1275,7 +1288,8 @@ class CustomRoomCardEditor extends HTMLElement {
           condition_state: undefined,
           condition_invert: undefined
         });
-      }, true);
+        this._render();
+      });
       details.append(condSelector);
       container.insertBefore(details, container.querySelector(".room-actions"));
 
