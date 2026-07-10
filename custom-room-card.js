@@ -1,6 +1,6 @@
 // src/custom-room-card.js
 var CARD_TAG = "custom-room-card";
-var VERSION = "0.3.8";
+var VERSION = "0.3.9";
 var CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -725,10 +725,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
     container.append(appearanceTitle);
     const appearanceGrid = document.createElement("div");
     appearanceGrid.className = "chip-options";
-    const name = document.createElement("ha-input");
+    const name = document.createElement("ha-selector");
+    name.hass = this._hass;
     name.label = "Etichetta";
+    name.selector = { template: {} };
     name.value = chip.name || "";
-    name.addEventListener("change", (event) => this._updateChip(roomIndex, category, entityIndex, { name: event.currentTarget.value || void 0 }));
+    this._handlePicker(name, (value) => this._updateChip(roomIndex, category, entityIndex, { name: value || void 0 }));
     const icon = document.createElement("ha-icon-picker");
     icon.hass = this._hass;
     icon.label = "Icona";
@@ -971,16 +973,21 @@ var CustomRoomCardEditor = class extends HTMLElement {
     panel.append(headerSpan);
     const container = document.createElement("section");
     container.className = "room-editor";
-    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidit\xE0</span><ha-entity-picker data-humidity label="Umidit\xE0"></ha-entity-picker></div><div class="field"><span>Sensore luminosit\xE0</span><ha-entity-picker data-illuminance label="Luminosit\xE0"></ha-entity-picker></div><div class="field" data-tap-action><span>Azione tocco</span></div><div class="field" data-hold-action><span>Pressione prolungata</span></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
+    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field" data-title><span>Titolo personalizzato</span></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidit\xE0</span><ha-entity-picker data-humidity label="Umidit\xE0"></ha-entity-picker></div><div class="field"><span>Sensore luminosit\xE0</span><ha-entity-picker data-illuminance label="Luminosit\xE0"></ha-entity-picker></div><div class="field" data-tap-action><span>Azione tocco</span></div><div class="field" data-hold-action><span>Pressione prolungata</span></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
     panel.append(container);
     parent.append(panel);
     const area = container.querySelector("[data-area]");
     area.hass = this._hass;
     area.value = room.area || "";
     this._handlePicker(area, (value) => this._updateRoom(index, { area: value || void 0 }), true);
-    const title = container.querySelector("[data-title]");
-    title.value = room.title || "";
-    title.addEventListener("change", (event) => this._updateRoom(index, { title: event.currentTarget.value || void 0 }));
+    const titleHolder = container.querySelector("[data-title]");
+    const titleSelector = document.createElement("ha-selector");
+    titleSelector.hass = this._hass;
+    titleSelector.label = "Titolo";
+    titleSelector.selector = { template: {} };
+    titleSelector.value = room.title || "";
+    this._handlePicker(titleSelector, (value) => this._updateRoom(index, { title: value || void 0 }));
+    titleHolder.append(titleSelector);
     const colorHolder = container.querySelector("[data-color]");
     const color = document.createElement("ha-selector");
     color.hass = this._hass;
