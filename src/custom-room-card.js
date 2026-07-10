@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.13";
+const VERSION = "0.3.14";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -814,16 +814,22 @@ class CustomRoomCardEditor extends HTMLElement {
       panel.append(container);
     };
 
+    const triggerRender = () => {
+      if (panel.dataset.rendered === "true") return;
+      panel.dataset.rendered = "true";
+      renderChipContent();
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 50);
+    };
+
+    panel.addEventListener("pointerdown", triggerRender);
     panel.addEventListener("expanded-changed", (event) => {
-      if (panel.expanded && !panel.dataset.rendered) {
-        panel.dataset.rendered = "true";
-        renderChipContent();
-      }
+      if (panel.expanded) triggerRender();
     });
 
     if (panel.expanded || panel.hasAttribute("expanded")) {
-      panel.dataset.rendered = "true";
-      renderChipContent();
+      triggerRender();
     }
 
     holder.append(panel);
@@ -1028,16 +1034,22 @@ class CustomRoomCardEditor extends HTMLElement {
       container.querySelector("[data-remove]").addEventListener("click", () => { this._emit({ ...this._config, rooms: this._config.rooms.filter((_, i) => i !== index) }); this._render(); });
     };
 
+    const triggerRoomRender = () => {
+      if (panel.dataset.rendered === "true") return;
+      panel.dataset.rendered = "true";
+      renderRoomContent();
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 50);
+    };
+
+    panel.addEventListener("pointerdown", triggerRoomRender);
     panel.addEventListener("expanded-changed", (event) => {
-      if (panel.expanded && !panel.dataset.rendered) {
-        panel.dataset.rendered = "true";
-        renderRoomContent();
-      }
+      if (panel.expanded) triggerRoomRender();
     });
 
     if (panel.expanded || panel.hasAttribute("expanded")) {
-      panel.dataset.rendered = "true";
-      renderRoomContent();
+      triggerRoomRender();
     }
 
     parent.append(panel);
