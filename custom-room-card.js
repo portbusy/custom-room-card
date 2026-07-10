@@ -1,35 +1,35 @@
 // src/custom-room-card.js
 var CARD_TAG = "custom-room-card";
-var VERSION = "0.1.0";
-var DOMAIN_META = {
-  light: { label: "Luce", icon: "mdi:lightbulb", activeIcon: "mdi:lightbulb", inactiveIcon: "mdi:lightbulb-outline" },
-  cover: { label: "Tapparella", icon: "mdi:roller-shade", activeIcon: "mdi:roller-shade", inactiveIcon: "mdi:roller-shade-closed" },
-  climate: { label: "Clima", icon: "mdi:air-conditioner", activeIcon: "mdi:air-conditioner", inactiveIcon: "mdi:air-conditioner" },
-  media_player: { label: "Media", icon: "mdi:television", activeIcon: "mdi:television", inactiveIcon: "mdi:television-off" },
-  input_boolean: { label: "Interruttore", icon: "mdi:toggle-switch", activeIcon: "mdi:toggle-switch", inactiveIcon: "mdi:toggle-switch-off-outline" },
-  switch: { label: "Interruttore", icon: "mdi:toggle-switch", activeIcon: "mdi:toggle-switch", inactiveIcon: "mdi:toggle-switch-off-outline" }
+var VERSION = "0.2.0";
+var CATEGORIES = {
+  lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
+  covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
+  climate: { domain: "climate", label: "Clima", icon: "mdi:air-conditioner", off: "mdi:air-conditioner" },
+  media: { domain: "media_player", label: "Media", icon: "mdi:television", off: "mdi:television-off" },
+  switches: { domain: "switch", domains: ["switch", "input_boolean"], label: "Interruttori", icon: "mdi:toggle-switch", off: "mdi:toggle-switch-off-outline" }
 };
-var UNAVAILABLE = /* @__PURE__ */ new Set(["unavailable", "unknown"]);
+var OFF = /* @__PURE__ */ new Set(["off", "closed", "idle", "standby", "unavailable", "unknown"]);
+var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var on = (state) => state && !OFF.has(state.state);
+var number = (value, digits = 0) => {
+  const n = Number.parseFloat(value);
+  return Number.isFinite(n) ? n.toFixed(digits) : null;
+};
+var entityName = (hass, id) => hass.states[id]?.attributes?.friendly_name || id;
 var CARD_STYLE = `
-  :host{display:block}ha-card{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px rgb(166 109 88 / 18%)}
-  .header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;min-height:116px;padding:22px 36px;border:0;color:var(--primary-text-color);text-align:left;cursor:pointer;background:linear-gradient(120deg,rgb(166 109 88 / 92%),rgb(166 109 88 / 55%) 35%,rgb(166 109 88 / 20%) 65%,transparent)}
-  .title{font-size:1.8rem;font-weight:600;line-height:1.2;color:#fff;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:32px;top:38px;--mdc-icon-size:48px;color:rgb(166 109 88 / 82%);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:12px;margin-top:14px;color:#fff;font-size:1.1rem;white-space:nowrap}.status{--mdc-icon-size:19px;color:rgb(255 255 255 / 40%)}.status.active{color:#ffa726}.chips{display:flex;gap:12px;flex-wrap:wrap;padding:16px 28px 22px;background:linear-gradient(120deg,rgb(166 109 88 / 13%),rgb(166 109 88 / 4%))}.chip{display:inline-flex;align-items:center;gap:9px;min-height:46px;max-width:100%;padding:0 18px;border:1px solid rgb(166 109 88 / 18%);border-radius:999px;background:rgb(166 109 88 / 6%);color:var(--primary-text-color);font:600 1rem/1 var(--primary-font-family);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 22%)}.chip ha-icon{--mdc-icon-size:25px;color:var(--secondary-text-color)}.chip.active{border-color:rgb(255 167 38 / 45%);background:rgb(255 167 38 / 15%)}.chip.active ha-icon{color:#ffb300}.empty{padding:20px 28px;color:var(--secondary-text-color)}@media(max-width:450px){.header{padding:20px 22px}.chips{padding:14px 18px 18px}.room-icon{right:20px}.title{font-size:1.55rem}.summary{gap:8px;font-size:1rem;max-width:85%;overflow:hidden}}
+  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;min-height:112px;box-sizing:border-box;padding:20px 36px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 52%,transparent) 39%,color-mix(in srgb,var(--room-color) 15%,transparent) 72%,transparent)}.title{font-size:1.7rem;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:30px;top:34px;--mdc-icon-size:46px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:1.08rem;white-space:nowrap}.summary ha-icon{--mdc-icon-size:19px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.chips{display:flex;gap:12px;flex-wrap:wrap;padding:14px 28px 18px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;padding:0 17px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 1rem/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:24px;color:var(--secondary-text-color)}.chip.active{border-color:rgb(255 167 38 / 52%);background:rgb(255 167 38 / 15%)}.chip.active ha-icon{color:#ffb300}.empty{padding:16px 28px 18px;color:var(--secondary-text-color)}@media(max-width:450px){.header{padding:19px 22px}.chips{padding:13px 18px 17px}.room-icon{right:20px}.title{font-size:1.5rem}.summary{gap:8px;font-size:1rem;max-width:85%;overflow:hidden}}
 `;
 var EDITOR_STYLE = `
-  :host{display:block}.editor{display:grid;gap:14px;padding:16px}.editor label{display:grid;gap:6px;font-size:.9rem}.editor input,.editor select{box-sizing:border-box;width:100%;padding:9px;border:1px solid var(--divider-color);border-radius:6px;background:var(--card-background-color);color:var(--primary-text-color)}.editor .toggle{display:flex;align-items:center;gap:8px}.editor .toggle input{width:auto}
+  :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px;border:1px solid var(--divider-color);border-radius:12px}.room-head{display:flex;align-items:center;justify-content:space-between}.room-head h3{margin:0;font-size:1rem}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:10px}.entities h4{margin:2px 0 0;font-size:.95rem}@media(max-width:520px){.fields{grid-template-columns:1fr}}
 `;
-function html(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
-}
-function nameFor(hass, entityId) {
-  return hass.states[entityId]?.attributes?.friendly_name || entityId;
-}
-function isOn(state) {
-  return state && !["off", "closed", "idle", "standby", "unavailable", "unknown"].includes(state.state);
-}
-function formatNumber(value, digits = 0) {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed.toFixed(digits) : null;
+function defaultColor(name = "") {
+  const n = name.toLowerCase();
+  if (/bagno|bath/.test(n)) return "#5c9eb8";
+  if (/camera|letto|bed/.test(n)) return "#7d79ad";
+  if (/cucina|kitchen/.test(n)) return "#c88b54";
+  if (/giardino|garden|terrazzo/.test(n)) return "#67966f";
+  if (/studio|office/.test(n)) return "#7c8fa9";
+  return "#a66d58";
 }
 var CustomRoomCard = class extends HTMLElement {
   constructor() {
@@ -40,12 +40,12 @@ var CustomRoomCard = class extends HTMLElement {
     return document.createElement("custom-room-card-editor");
   }
   static getStubConfig(hass) {
-    const firstArea = Object.keys(hass?.areas || {})[0];
-    return { type: `custom:${CARD_TAG}`, ...firstArea ? { area: firstArea } : {} };
+    const area = Object.keys(hass?.areas || {})[0];
+    return { type: `custom:${CARD_TAG}`, sort_by_motion: false, rooms: area ? [{ area, entities: {} }] : [] };
   }
   setConfig(config) {
-    if (!config?.area) throw new Error("Definisci un'area per custom-room-card.");
-    this._config = { show_lights: true, show_covers: true, show_climate: true, show_media: true, show_switches: false, ...config };
+    const legacy = config.area ? [{ area: config.area, title: config.title, icon: config.icon, color: config.color, entities: config.entities || null }] : config.rooms;
+    this._config = { ...config, rooms: (legacy || []).map((room) => ({ entities: {}, ...room })) };
     this._render();
   }
   set hass(hass) {
@@ -53,82 +53,64 @@ var CustomRoomCard = class extends HTMLElement {
     this._render();
   }
   getCardSize() {
-    return 3;
+    return Math.max(2, (this._config?.rooms?.length || 1) * 2);
   }
-  _areaEntityIds() {
-    const area = this._config?.area;
-    if (!area || !this._hass) return [];
+  _areaIds(area) {
     const devices = this._hass.devices || {};
-    return Object.values(this._hass.entities || {}).filter((entry) => entry.area_id === area || entry.device_id && devices[entry.device_id]?.area_id === area).map((entry) => entry.entity_id).filter((id) => this._hass.states[id]);
+    return Object.values(this._hass.entities || {}).filter((e) => e.area_id === area || e.device_id && devices[e.device_id]?.area_id === area).map((e) => e.entity_id).filter((id) => this._hass.states[id]);
   }
-  _findSensor(ids, classes) {
-    return ids.map((id) => this._hass.states[id]).find((state) => state?.attributes?.device_class && classes.includes(state.attributes.device_class) && !UNAVAILABLE.has(state.state));
+  _sensor(ids, classes) {
+    return ids.map((id) => this._hass.states[id]).find((s) => classes.includes(s?.attributes?.device_class) && !OFF.has(s?.state));
   }
-  _groups(ids) {
-    return Object.keys(DOMAIN_META).map((domain) => ({
-      domain,
-      entities: ids.filter((id) => id.startsWith(`${domain}.`))
-    })).filter((group) => {
-      const option = { light: "show_lights", cover: "show_covers", climate: "show_climate", media_player: "show_media", input_boolean: "show_switches", switch: "show_switches" }[group.domain];
-      return group.entities.length && (!option || this._config[option] !== false);
+  _motion(room, ids) {
+    return room.motion_entity ? this._hass.states[room.motion_entity] : this._sensor(ids, ["motion", "occupancy", "presence"]);
+  }
+  _sort(rooms) {
+    if (!this._config.sort_by_motion) return rooms;
+    return [...rooms].sort((a, b) => {
+      const ma = this._motion(a.room, a.ids);
+      const mb = this._motion(b.room, b.ids);
+      if (on(ma) !== on(mb)) return on(mb) - on(ma);
+      return new Date(mb?.last_changed || 0) - new Date(ma?.last_changed || 0);
     });
+  }
+  _entities(room, ids) {
+    if (room.entities === null) return ids.filter((id) => /^(light|cover|climate|media_player)\./.test(id));
+    return Object.values(room.entities || {}).flat().filter((id) => this._hass.states[id]);
   }
   _render() {
-    if (!this._config || !this._hass) return;
-    const hass = this._hass;
-    const ids = this._areaEntityIds();
-    const area = hass.areas?.[this._config.area];
-    const title = this._config.title || area?.name || this._config.area;
-    const temperature = this._findSensor(ids, ["temperature"]);
-    const humidity = this._findSensor(ids, ["humidity"]);
-    const illuminance = this._findSensor(ids, ["illuminance"]);
-    const presence = this._findSensor(ids, ["presence", "occupancy", "motion"]);
-    const opening = this._findSensor(ids, ["opening", "door", "window"]);
-    const metrics = [
-      temperature && `${html(formatNumber(temperature.state, 1) ?? temperature.state)}\xB0C`,
-      humidity && `${html(formatNumber(humidity.state) ?? humidity.state)}%`,
-      illuminance && `${html(formatNumber(illuminance.state) ?? illuminance.state)} lx`
-    ].filter(Boolean);
-    const statusIcons = [
-      presence && `<ha-icon title="Presenza" class="status ${isOn(presence) ? "active" : ""}" icon="mdi:circle"></ha-icon>`,
-      opening && `<ha-icon title="${isOn(opening) ? "Aperto" : "Chiuso"}" class="status ${isOn(opening) ? "active" : ""}" icon="mdi:${isOn(opening) ? "window-open-variant" : "window-closed-variant"}"></ha-icon>`
-    ].filter(Boolean).join("");
-    const chips = this._groups(ids).flatMap((group) => group.entities.map((entity) => this._chip(group.domain, entity))).join("");
-    this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style><ha-card class="room-card">
-      <button class="header" aria-label="${html(title)}">
-        <ha-icon class="room-icon" icon="${html(this._config.icon || area?.icon || "mdi:home")}"></ha-icon>
-        <span class="title">${html(title)}</span>
-        <span class="summary">${statusIcons}${metrics.map((item) => `<span>${item}</span>`).join("")}</span>
-      </button>
-      ${chips ? `<div class="chips">${chips}</div>` : `<div class="empty">Nessuna entit\xE0 controllabile in quest\u2019area</div>`}
-    </ha-card>`;
-    this._attachEvents();
-  }
-  _chip(domain, entity) {
-    const meta = DOMAIN_META[domain];
-    const active = isOn(this._hass.states[entity]);
-    const icon = active ? meta.activeIcon : meta.inactiveIcon;
-    const label = nameFor(this._hass, entity) || meta.label;
-    return `<button class="chip ${active ? "active" : ""}" data-entity="${html(entity)}" data-domain="${html(domain)}" aria-label="${html(label)}">
-      <ha-icon icon="${html(icon)}"></ha-icon><span>${html(label)}</span>
-    </button>`;
-  }
-  _attachEvents() {
-    this.shadowRoot.querySelector(".header")?.addEventListener("click", () => {
-      if (this._config.navigation_path) history.pushState(null, "", this._config.navigation_path);
-      else this._fire("hass-more-info", { entityId: this._areaEntityIds()[0] });
-    });
-    this.shadowRoot.querySelectorAll(".chip").forEach((chip) => {
-      const detail = { entityId: chip.dataset.entity };
-      chip.addEventListener("click", () => {
-        if (["light", "switch", "input_boolean"].includes(chip.dataset.domain)) this._hass.callService(chip.dataset.domain, "toggle", { entity_id: chip.dataset.entity });
-        else this._fire("hass-more-info", detail);
-      });
-      chip.addEventListener("contextmenu", (event) => {
+    if (!this._hass || !this._config) return;
+    const rooms = this._sort(this._config.rooms.map((room) => ({ room, ids: this._areaIds(room.area) })));
+    this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style><div class="rooms">${rooms.map(({ room, ids }) => this._room(room, ids)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
+    this.shadowRoot.querySelectorAll(".header").forEach((button) => button.addEventListener("click", () => this._fire("hass-more-info", { entityId: button.dataset.entity })));
+    this.shadowRoot.querySelectorAll(".chip").forEach((button) => {
+      const moreInfo = () => this._fire("hass-more-info", { entityId: button.dataset.entity });
+      button.addEventListener("click", () => ["light", "switch", "input_boolean"].includes(button.dataset.domain) ? this._hass.callService(button.dataset.domain, "toggle", { entity_id: button.dataset.entity }) : moreInfo());
+      button.addEventListener("contextmenu", (event) => {
         event.preventDefault();
-        this._fire("hass-more-info", detail);
+        moreInfo();
       });
     });
+  }
+  _room(room, ids) {
+    const area = this._hass.areas?.[room.area];
+    const title = room.title || area?.name || room.area;
+    const temp = this._sensor(ids, ["temperature"]);
+    const humidity = this._sensor(ids, ["humidity"]);
+    const lux = this._sensor(ids, ["illuminance"]);
+    const motion = this._motion(room, ids);
+    const opening = this._sensor(ids, ["opening", "door", "window"]);
+    const metrics = [temp && `${escape(number(temp.state, 1) ?? temp.state)}\xB0C`, humidity && `${escape(number(humidity.state) ?? humidity.state)}%`, lux && `${escape(number(lux.state) ?? lux.state)} lx`].filter(Boolean);
+    const status = [motion && `<ha-icon class="${on(motion) ? "active" : ""}" icon="mdi:circle"></ha-icon>`, opening && `<ha-icon class="${on(opening) ? "active" : ""}" icon="mdi:${on(opening) ? "window-open-variant" : "window-closed-variant"}"></ha-icon>`].filter(Boolean).join("");
+    const entities = this._entities(room, ids);
+    const color = room.color || defaultColor(title);
+    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-entity="${escape(room.motion_entity || ids[0] || "")}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}</span><span class="summary">${status}${metrics.map((m) => `<span>${m}</span>`).join("")}</span></button>${entities.length ? `<div class="chips">${entities.map((id) => this._chip(id)).join("")}</div>` : `<div class="empty">Nessuna entit\xE0 selezionata</div>`}</section>`;
+  }
+  _chip(id) {
+    const domain = id.split(".")[0];
+    const category = Object.values(CATEGORIES).find((item) => item.domain === domain) || CATEGORIES.switches;
+    const active = on(this._hass.states[id]);
+    return `<button class="chip ${active ? "active" : ""}" data-entity="${escape(id)}" data-domain="${escape(domain)}"><ha-icon icon="${active ? category.icon : category.off}"></ha-icon><span>${escape(entityName(this._hass, id))}</span></button>`;
   }
   _fire(type, detail) {
     this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
@@ -140,31 +122,62 @@ var CustomRoomCardEditor = class extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
   setConfig(config) {
-    this._config = config;
+    this._config = { ...config, rooms: config.rooms || (config.area ? [{ area: config.area, entities: config.entities || {} }] : []) };
     this._render();
   }
   set hass(hass) {
     this._hass = hass;
     this._render();
   }
+  _emit(config) {
+    this._config = config;
+    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }));
+    this._render();
+  }
+  _updateRoom(index, changes) {
+    const rooms = this._config.rooms.map((room, i) => i === index ? { ...room, ...changes } : room);
+    this._emit({ ...this._config, rooms });
+  }
+  _selector(holder, selector, value, change) {
+    const picker = document.createElement("ha-selector");
+    picker.hass = this._hass;
+    picker.selector = selector;
+    picker.value = value;
+    picker.addEventListener("value-changed", (event) => change(event.detail.value));
+    holder.append(picker);
+  }
   _render() {
     if (!this._hass || !this._config) return;
-    const options = Object.entries(this._hass.areas || {}).map(([id, area]) => `<option value="${html(id)}" ${id === this._config.area ? "selected" : ""}>${html(area.name)}</option>`).join("");
-    this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor">
-      <label>Area<select data-key="area"><option value="">Seleziona un\u2019area</option>${options}</select></label>
-      <label>Titolo (opzionale)<input data-key="title" value="${html(this._config.title)}" placeholder="Nome dell\u2019area"></label>
-      <label>Icona (opzionale)<input data-key="icon" value="${html(this._config.icon)}" placeholder="mdi:sofa"></label>
-      ${[["show_lights", "Mostra luci"], ["show_covers", "Mostra tapparelle"], ["show_climate", "Mostra clima"], ["show_media", "Mostra media"], ["show_switches", "Mostra interruttori"]].map(([key, label]) => `<label class="toggle"><input type="checkbox" data-key="${key}" ${this._config[key] !== false ? "checked" : ""}>${label}</label>`).join("")}
-    </div>`;
-    this.shadowRoot.querySelectorAll("[data-key]").forEach((input) => input.addEventListener("change", () => {
-      const key = input.dataset.key;
-      const value = input.type === "checkbox" ? input.checked : input.value;
-      this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: { ...this._config, [key]: value } }, bubbles: true, composed: true }));
-    }));
+    this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div>`;
+    const rooms = this.shadowRoot.querySelector("#rooms");
+    this._config.rooms.forEach((room, index) => this._roomEditor(rooms, room, index));
+    this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.target.checked }));
+    this.shadowRoot.querySelector("#add").addEventListener("click", () => this._emit({ ...this._config, rooms: [...this._config.rooms, { entities: {} }] }));
+  }
+  _roomEditor(parent, room, index) {
+    const container = document.createElement("section");
+    container.className = "room-editor";
+    container.innerHTML = `<div class="room-head"><h3>Stanza ${index + 1}</h3><ha-icon-button data-remove icon="mdi:delete" label="Rimuovi stanza"></ha-icon-button></div><div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field" data-color><span>Colore base</span></div><div class="field" data-icon><span>Icona</span></div><div class="field" data-motion><span>Sensore movimento</span></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div>`;
+    parent.append(container);
+    const picker = container.querySelector("[data-area]");
+    picker.hass = this._hass;
+    picker.value = room.area || "";
+    picker.addEventListener("value-changed", (e) => this._updateRoom(index, { area: e.detail.value }));
+    this._selector(container.querySelector("[data-color]"), { ui_color: {} }, room.color || defaultColor(this._hass.areas?.[room.area]?.name), (value) => this._updateRoom(index, { color: value }));
+    this._selector(container.querySelector("[data-icon]"), { icon: {} }, room.icon || "", (value) => this._updateRoom(index, { icon: value }));
+    this._selector(container.querySelector("[data-motion]"), { entity: { filter: [{ domain: "binary_sensor", device_class: ["motion", "occupancy", "presence"] }] } }, room.motion_entity || "", (value) => this._updateRoom(index, { motion_entity: value }));
+    Object.entries(CATEGORIES).forEach(([key, meta]) => {
+      const field = document.createElement("div");
+      field.className = "field";
+      field.innerHTML = `<span>${meta.label}</span>`;
+      container.querySelector(".entities").append(field);
+      this._selector(field, { entity: { multiple: true, filter: (meta.domains || [meta.domain]).map((domain) => ({ domain })) } }, room.entities?.[key] || [], (value) => this._updateRoom(index, { entities: { ...room.entities || {}, [key]: value || [] } }));
+    });
+    container.querySelector("[data-remove]").addEventListener("click", () => this._emit({ ...this._config, rooms: this._config.rooms.filter((_, i) => i !== index) }));
   }
 };
 customElements.define(CARD_TAG, CustomRoomCard);
 customElements.define("custom-room-card-editor", CustomRoomCardEditor);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: CARD_TAG, name: "Custom Room Card", description: "Una panoramica visuale automatica per un'area." });
+window.customCards.push({ type: CARD_TAG, name: "Custom Room Card", description: "Panoramica multi-stanza configurabile per area." });
 console.info(`%c CUSTOM-ROOM-CARD %c v${VERSION} `, "color:white;background:#A66D58;font-weight:700", "color:#A66D58;background:white;font-weight:700");
