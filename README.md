@@ -1,5 +1,9 @@
 # Custom Room Card
 
+<p align="center">
+  <img src="logo.png" alt="Custom Room Card Logo" width="160">
+</p>
+
 Una card Lovelace multi-stanza per Home Assistant: stato di presenza/aperture, temperatura, umidità e luminosità nel titolo; controlli rapidi configurati esplicitamente per ogni area.
 
 Non richiede `button-card`, Mushroom, `card-mod` o `stack-in-card`.
