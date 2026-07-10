@@ -139,14 +139,14 @@ var CustomRoomCard = class extends HTMLElement {
         const selectedArray = Array.isArray(rawSelected) ? rawSelected : rawSelected ? [rawSelected] : [];
         const item = selectedArray[chipIndex];
         const chip = typeof item === "string" ? { entity: item } : item;
-        const defaultTapAction = ["light", "switch", "input_boolean"].includes(chip.entity.split(".")[0]) ? "toggle" : "more-info";
         return {
           entity: chip.entity,
-          tap_action: chip.tap_action || { action: defaultTapAction },
-          hold_action: chip.hold_action || { action: "more-info" }
+          tap_action: chip.tap_action || { action: "more-info" },
+          hold_action: chip.hold_action || { action: "none" }
         };
       };
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
         const actionConfig = getActionConfig();
         const actionEvent = new CustomEvent("hass-action", {
           bubbles: true,
@@ -160,6 +160,7 @@ var CustomRoomCard = class extends HTMLElement {
       });
       button.addEventListener("contextmenu", (event) => {
         event.preventDefault();
+        event.stopPropagation();
         const actionConfig = getActionConfig();
         const actionEvent = new CustomEvent("hass-action", {
           bubbles: true,
@@ -360,7 +361,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     tapAction.hass = this._hass;
     tapAction.label = "Azione tocco";
     tapAction.selector = { ui_action: {} };
-    tapAction.value = chip.tap_action || { action: "none" };
+    tapAction.value = chip.tap_action || { action: "more-info" };
     this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || void 0 }));
     const holdAction = document.createElement("ha-selector");
     holdAction.hass = this._hass;

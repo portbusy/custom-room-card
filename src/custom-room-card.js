@@ -117,15 +117,15 @@ class CustomRoomCard extends HTMLElement {
         const item = selectedArray[chipIndex];
         const chip = typeof item === "string" ? { entity: item } : item;
         
-        const defaultTapAction = ["light", "switch", "input_boolean"].includes(chip.entity.split(".")[0]) ? "toggle" : "more-info";
         return {
           entity: chip.entity,
-          tap_action: chip.tap_action || { action: defaultTapAction },
-          hold_action: chip.hold_action || { action: "more-info" }
+          tap_action: chip.tap_action || { action: "more-info" },
+          hold_action: chip.hold_action || { action: "none" }
         };
       };
       
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
         const actionConfig = getActionConfig();
         const actionEvent = new CustomEvent("hass-action", {
           bubbles: true,
@@ -140,6 +140,7 @@ class CustomRoomCard extends HTMLElement {
       
       button.addEventListener("contextmenu", (event) => {
         event.preventDefault();
+        event.stopPropagation();
         const actionConfig = getActionConfig();
         const actionEvent = new CustomEvent("hass-action", {
           bubbles: true,
@@ -304,7 +305,7 @@ class CustomRoomCardEditor extends HTMLElement {
     const actionsTitle = document.createElement("div"); actionsTitle.className = "editor-section-title"; actionsTitle.textContent = "Azioni"; container.append(actionsTitle);
     
     const actionsGrid = document.createElement("div"); actionsGrid.className = "chip-options";
-    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = chip.tap_action || { action: "none" }; this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || undefined }));
+    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = chip.tap_action || { action: "more-info" }; this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || undefined }));
     const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = chip.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => onChange({ ...chip, hold_action: value || undefined }));
     actionsGrid.append(tapAction, holdAction); container.append(actionsGrid);
 
