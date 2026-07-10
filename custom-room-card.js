@@ -44,8 +44,8 @@ var CustomRoomCard = class extends HTMLElement {
     return { type: `custom:${CARD_TAG}`, sort_by_motion: false, rooms: area ? [{ area, entities: {} }] : [] };
   }
   setConfig(config) {
-    const legacy = config.area ? [{ area: config.area, title: config.title, icon: config.icon, color: config.color, entities: config.entities || {} }] : config.rooms;
-    this._config = { ...config, rooms: (legacy || []).map((room) => ({ entities: {}, ...room })) };
+    const rooms = Array.isArray(config.rooms) && config.rooms.length ? config.rooms : config.area ? [{ area: config.area, title: config.title, icon: config.icon, color: config.color, entities: config.entities || {} }] : [];
+    this._config = { ...config, rooms: rooms.map((room) => ({ entities: {}, ...room })) };
     this._render();
   }
   set hass(hass) {
@@ -124,7 +124,9 @@ var CustomRoomCardEditor = class extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
   setConfig(config) {
-    const next = { ...config, rooms: config.rooms || (config.area ? [{ area: config.area, entities: config.entities || {} }] : []) };
+    const rooms = Array.isArray(config.rooms) && config.rooms.length ? config.rooms : config.area ? [{ area: config.area, title: config.title, icon: config.icon, color: config.color, entities: config.entities || {} }] : [];
+    const { area, entities, ...rest } = config;
+    const next = { ...rest, rooms };
     if (JSON.stringify(next) === JSON.stringify(this._config)) return;
     this._config = next;
     this._render();
