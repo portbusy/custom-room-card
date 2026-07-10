@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.2";
+const VERSION = "0.3.3";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -22,7 +22,7 @@ const elapsed = (changed) => {
 };
 
 const CARD_STYLE = `
-  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
+  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}.room.weather-room{background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);box-shadow:0 4px 20px rgba(0,0,0,0.18),0 0 0 1px rgba(91,155,213,0.2),inset 0 1px 0 rgba(255,255,255,0.08)}.weather-room .weather-header{background:transparent}.weather-room .chips{background:transparent}.weather-room .chip{color:#fff;border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.08)}.weather-room .chip ha-icon{color:rgba(255,255,255,0.7)}.weather-room .chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.weather-room .chip.active ha-icon{color:var(--chip-active,#ffb300)}
 `;
 const EDITOR_STYLE = `
   :host{display:block}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}@media(max-width:520px){.fields{grid-template-columns:1fr}}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px}.category-order-section{margin-top:4px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-order-section h5{margin:0 0 8px 0;font-size:0.85em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px}.category-order-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-bottom:1px solid var(--divider-color)}.category-order-row:last-child{border-bottom:none}.category-order-info{display:flex;align-items:center;gap:8px;font-size:0.9em;font-weight:500}.category-order-info ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.category-order-actions{display:flex;align-items:center;gap:4px}.category-order-actions ha-icon-button{--mdc-icon-button-size:28px;--mdc-icon-size:18px}.editor:not(.mode-rooms) .rooms-only{display:none!important}.editor:not(.mode-weather) .weather-only{display:none!important}.weather-editor-container{display:grid;gap:16px}.controls select{padding:6px 10px;border-radius:4px;border:1px solid var(--input-outlined-idle-border-color,var(--divider-color));background:var(--card-background-color);color:var(--primary-text-color);font-family:inherit;font-size:0.9em;cursor:pointer}
@@ -39,7 +39,7 @@ function defaultColor(name = "") {
 }
 
 class CustomRoomCard extends HTMLElement {
-  constructor() { super(); this.attachShadow({ mode: "open" }); this._clock = null; this._templateSubs = {}; this._renderedTemplates = {}; }
+  constructor() { super(); this.attachShadow({ mode: "open" }); this._clock = null; this._templateSubs = {}; this._renderedTemplates = {}; this._monitoredEntities = []; this._oldBodyHTML = ""; }
   static getConfigElement() { return document.createElement("custom-room-card-editor"); }
   static getStubConfig(hass) { const area = Object.keys(hass?.areas || {})[0]; return { type: `custom:${CARD_TAG}`, sort_by_motion: false, rooms: area ? [{ area, entities: {} }] : [] }; }
   setConfig(config) {
@@ -48,9 +48,74 @@ class CustomRoomCard extends HTMLElement {
       ? config.rooms
       : config.area ? [{ area: config.area, title: config.title, icon: config.icon, color: config.color, entities: config.entities || {} }] : [];
     this._config = { ...config, card_type, rooms: rooms.map((room) => ({ entities: {}, ...room })) };
+    this._updateMonitoredEntities();
     this._render();
   }
-  set hass(hass) { this._hass = hass; this._render(); }
+  _updateMonitoredEntities() {
+    const entities = new Set();
+    if (!this._config) return;
+    const cardType = this._config.card_type || "rooms";
+    if (cardType === "rooms") {
+      (this._config.rooms || []).forEach(room => {
+        if (room.temperature_entity) entities.add(room.temperature_entity);
+        if (room.humidity_entity) entities.add(room.humidity_entity);
+        if (room.illuminance_entity) entities.add(room.illuminance_entity);
+        if (room.motion_entity) entities.add(room.motion_entity);
+        if (room.opening_entity) entities.add(room.opening_entity);
+        if (room.entities) {
+          Object.values(room.entities).forEach(val => {
+            const arr = Array.isArray(val) ? val : (val ? [val] : []);
+            arr.forEach(item => {
+              const id = typeof item === "string" ? item : item?.entity;
+              if (id) entities.add(id);
+              const condId = item?.condition_entity;
+              if (condId) entities.add(condId);
+            });
+          });
+        }
+        if (room.area && this._hass) {
+          const areaIds = this._areaIds(room.area);
+          areaIds.forEach(id => entities.add(id));
+        }
+      });
+    } else {
+      if (this._config.temp_entity) entities.add(this._config.temp_entity);
+      if (this._config.condition_entity) entities.add(this._config.condition_entity);
+      if (this._config.high_temp_entity) entities.add(this._config.high_temp_entity);
+      if (this._config.low_temp_entity) entities.add(this._config.low_temp_entity);
+      if (this._config.precip_probability_entity) entities.add(this._config.precip_probability_entity);
+      if (this._config.weather_icon_entity) entities.add(this._config.weather_icon_entity);
+      if (this._config.sunset_entity) entities.add(this._config.sunset_entity);
+      if (this._config.chips) {
+        this._config.chips.forEach(item => {
+          const id = typeof item === "string" ? item : item?.entity;
+          if (id) entities.add(id);
+          const condId = item?.condition_entity;
+          if (condId) entities.add(condId);
+        });
+      }
+    }
+    this._monitoredEntities = Array.from(entities);
+  }
+  set hass(hass) {
+    const oldHass = this._hass;
+    this._hass = hass;
+    this._updateMonitoredEntities();
+    if (!oldHass) {
+      this._render();
+      return;
+    }
+    let changed = false;
+    for (const id of this._monitoredEntities) {
+      if (oldHass.states[id] !== hass.states[id]) {
+        changed = true;
+        break;
+      }
+    }
+    if (changed) {
+      this._render();
+    }
+  }
   connectedCallback() { this._clock = window.setInterval(() => this._render(), 60000); }
   disconnectedCallback() {
     if (this._clock) window.clearInterval(this._clock);
@@ -248,7 +313,23 @@ class CustomRoomCard extends HTMLElement {
     
     if (cardType === "rooms") {
       const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })));
-      this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style><div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
+      const newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
+      if (this._oldBodyHTML !== newHTML) {
+        this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${newHTML}`;
+        this._oldBodyHTML = newHTML;
+        this._bindEvents(cardType);
+      }
+    } else {
+      const newHTML = this._weather();
+      if (this._oldBodyHTML !== newHTML) {
+        this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${newHTML}`;
+        this._oldBodyHTML = newHTML;
+        this._bindEvents(cardType);
+      }
+    }
+  }
+  _bindEvents(cardType) {
+    if (cardType === "rooms") {
       this.shadowRoot.querySelectorAll(".header:not(.weather-header)").forEach((button) => {
         const getActionConfig = () => {
           const roomIndex = Number.parseInt(button.dataset.roomIndex);
@@ -292,7 +373,6 @@ class CustomRoomCard extends HTMLElement {
         });
       });
     } else {
-      this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${this._weather()}`;
       this.shadowRoot.querySelectorAll(".weather-header").forEach((button) => {
         const getActionConfig = () => {
           return {
