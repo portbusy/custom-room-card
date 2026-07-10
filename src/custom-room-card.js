@@ -157,7 +157,7 @@ class CustomRoomCard extends HTMLElement {
     const area = this._hass.areas?.[room.area]; const title = room.title || area?.name || room.area;
     const temp = room.temperature_entity ? this._hass.states[room.temperature_entity] : this._sensor(ids, ["temperature"]);
     const humidity = room.humidity_entity ? this._hass.states[room.humidity_entity] : this._sensor(ids, ["humidity"]);
-    const lux = this._sensor(ids, ["illuminance"]);
+    const lux = room.illuminance_entity ? this._hass.states[room.illuminance_entity] : this._sensor(ids, ["illuminance"]);
     const motion = this._motion(room, ids); const opening = this._opening(room, ids);
     
     const tempValue = temp && `${escape(number(temp.state, 1) ?? temp.state)}°C`;
@@ -166,7 +166,7 @@ class CustomRoomCard extends HTMLElement {
     
     const tempElement = temp ? `<span class="status-metric" data-entity="${escape(room.temperature_entity || temp.entity_id)}"><ha-icon icon="mdi:thermometer"></ha-icon><span>${tempValue}</span></span>` : "";
     const humidityElement = humidity ? `<span class="status-metric" data-entity="${escape(room.humidity_entity || humidity.entity_id)}"><ha-icon icon="mdi:water-percent"></ha-icon><span>${humidityValue}</span></span>` : "";
-    const luxElement = lux ? `<span class="status-metric" data-entity="${escape(lux.entity_id)}"><ha-icon icon="mdi:weather-sunny"></ha-icon><span>${luxValue}</span></span>` : "";
+    const luxElement = lux ? `<span class="status-metric" data-entity="${escape(room.illuminance_entity || lux.entity_id)}"><ha-icon icon="mdi:weather-sunny"></ha-icon><span>${luxValue}</span></span>` : "";
     
     const metrics = [tempElement, humidityElement, luxElement].filter(Boolean).join("");
     const status = [
@@ -193,7 +193,12 @@ class CustomRoomCardEditor extends HTMLElement {
     const { area, entities, ...rest } = config;
     const next = { ...rest, rooms };
     if (JSON.stringify(next) === JSON.stringify(this._config)) return;
-    this._config = next; this._render();
+    this._config = next;
+    if (this._isUpdating) {
+      this._isUpdating = false;
+      return;
+    }
+    this._render();
   }
   set hass(hass) {
     const needsInitialRender = !this._hass && this._config;
@@ -202,7 +207,11 @@ class CustomRoomCardEditor extends HTMLElement {
     // editor here destroys an open native entity-picker while it is searching.
     if (needsInitialRender) this._render();
   }
-  _emit(config) { this._config = config; this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true })); }
+  _emit(config) {
+    this._config = config;
+    this._isUpdating = true;
+    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }));
+  }
   _updateRoom(index, changes) { const rooms = this._config.rooms.map((room, i) => i === index ? { ...room, ...changes } : room); this._emit({ ...this._config, rooms }); }
   _moveRoom(index, direction) {
     const target = index + direction;
@@ -224,7 +233,28 @@ class CustomRoomCardEditor extends HTMLElement {
     this._handlePicker(picker, (value) => { if (value) onPick(value); }, true);
     holder.append(picker);
   }
-  _selectedEntityRow(holder, chip, domains, onChange, onRemove) {
+  _saveState() {
+    if (!this.shadowRoot) return { expanded: [], openDetails: [] };
+    const expanded = Array.from(this.shadowRoot.querySelectorAll("ha-expansion-panel"))
+      .map((panel, index) => panel.expanded ? index : -1)
+      .filter((index) => index !== -1);
+    const openDetails = Array.from(this.shadowRoot.querySelectorAll("details"))
+      .filter((d) => d.open)
+      .map((d) => d.getAttribute("data-details-id"));
+    return { expanded, openDetails };
+  }
+  _restoreState(state) {
+    if (!this.shadowRoot) return;
+    const panels = this.shadowRoot.querySelectorAll("ha-expansion-panel");
+    state.expanded.forEach((index) => {
+      if (panels[index]) panels[index].expanded = true;
+    });
+    state.openDetails.forEach((id) => {
+      const details = this.shadowRoot.querySelector(`details[data-details-id="${id}"]`);
+      if (details) details.open = true;
+    });
+  }
+  _selectedEntityRow(holder, chip, domains, onChange, onRemove, roomIndex, category, entityIndex) {
     const row = document.createElement("div"); row.className = "entity-row";
     const main = document.createElement("div"); main.className = "entity-main";
     const picker = document.createElement("ha-entity-picker");
@@ -235,46 +265,51 @@ class CustomRoomCardEditor extends HTMLElement {
     remove.addEventListener("click", () => { onRemove(); this._render(); });
     main.append(picker, remove); row.append(main);
     const options = document.createElement("div"); options.className = "chip-options";
-    const name = document.createElement("ha-input"); name.label = "Etichetta"; name.value = chip.name || ""; name.addEventListener("change", (event) => onChange({ ...chip, name: event.target.value || undefined }));
-    const icon = document.createElement("ha-icon-picker"); icon.hass = this._hass; icon.label = "Icona"; icon.value = chip.icon || ""; this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || undefined }), true);
-    const activeIcon = document.createElement("ha-icon-picker"); activeIcon.hass = this._hass; activeIcon.label = "Icona attiva"; activeIcon.value = chip.active_icon || ""; this._handlePicker(activeIcon, (value) => onChange({ ...chip, active_icon: value || undefined }), true);
-    const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = chip.color || "#ffb300"; this._handlePicker(color, (value) => onChange({ ...chip, color: value || undefined }), true);
-    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = chip.tap_action || { action: "none" }; this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || undefined }), true);
-    const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = chip.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => onChange({ ...chip, hold_action: value || undefined }), true);
+    const name = document.createElement("ha-input"); name.label = "Etichetta"; name.value = chip.name || ""; name.addEventListener("change", (event) => onChange({ ...chip, name: event.currentTarget.value || undefined }));
+    const icon = document.createElement("ha-icon-picker"); icon.hass = this._hass; icon.label = "Icona"; icon.value = chip.icon || ""; this._handlePicker(icon, (value) => onChange({ ...chip, icon: value || undefined }));
+    const activeIcon = document.createElement("ha-icon-picker"); activeIcon.hass = this._hass; activeIcon.label = "Icona attiva"; activeIcon.value = chip.active_icon || ""; this._handlePicker(activeIcon, (value) => onChange({ ...chip, active_icon: value || undefined }));
+    const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = chip.color || "#ffb300"; this._handlePicker(color, (value) => onChange({ ...chip, color: value || undefined }));
+    const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = chip.tap_action || { action: "none" }; this._handlePicker(tapAction, (value) => onChange({ ...chip, tap_action: value || undefined }));
+    const holdAction = document.createElement("ha-selector"); holdAction.hass = this._hass; holdAction.label = "Pressione prolungata"; holdAction.selector = { ui_action: {} }; holdAction.value = chip.hold_action || { action: "none" }; this._handlePicker(holdAction, (value) => onChange({ ...chip, hold_action: value || undefined }));
     options.append(name, icon, activeIcon, color, tapAction, holdAction); row.append(options);
 
     // Visibility conditions collapsible section
     const details = document.createElement("details");
+    details.setAttribute("data-details-id", `${roomIndex}-${category}-${entityIndex}`);
     const summary = document.createElement("summary"); summary.textContent = "Condizioni di visibilità"; details.append(summary);
     const condGrid = document.createElement("div"); condGrid.className = "chip-conditions-grid";
-    const condEntity = document.createElement("ha-entity-picker"); condEntity.hass = this._hass; condEntity.label = "Entità condizione"; condEntity.value = chip.condition_entity || ""; this._handlePicker(condEntity, (value) => onChange({ ...chip, condition_entity: value || undefined }), true);
-    const condState = document.createElement("ha-input"); condState.label = "Stato atteso"; condState.value = chip.condition_state || "on"; condState.addEventListener("change", (event) => onChange({ ...chip, condition_state: event.target.value || undefined }));
-    const condInvertDiv = document.createElement("div"); condInvertDiv.className = "field"; condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`; condInvertDiv.querySelector("#invert").addEventListener("change", (event) => onChange({ ...chip, condition_invert: event.target.checked || undefined }));
+    const condEntity = document.createElement("ha-entity-picker"); condEntity.hass = this._hass; condEntity.label = "Entità condizione"; condEntity.value = chip.condition_entity || ""; this._handlePicker(condEntity, (value) => onChange({ ...chip, condition_entity: value || undefined }));
+    const condState = document.createElement("ha-input"); condState.label = "Stato atteso"; condState.value = chip.condition_state || "on"; condState.addEventListener("change", (event) => onChange({ ...chip, condition_state: event.currentTarget.value || undefined }));
+    const condInvertDiv = document.createElement("div"); condInvertDiv.className = "field"; condInvertDiv.innerHTML = `<span>Inverti condizione</span><ha-switch id="invert" ${chip.condition_invert ? "checked" : ""}></ha-switch>`; condInvertDiv.querySelector("#invert").addEventListener("change", (event) => onChange({ ...chip, condition_invert: event.currentTarget.checked || undefined }));
     condGrid.append(condEntity, condState, condInvertDiv); details.append(condGrid); row.append(details);
 
     holder.append(row);
   }
   _render() {
     if (!this._hass || !this._config) return;
+    this._isUpdating = false;
+    const state = this._saveState();
     this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div>`;
     const rooms = this.shadowRoot.querySelector("#rooms");
     this._config.rooms.forEach((room, index) => this._roomEditor(rooms, room, index));
-    this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.target.checked }));
+    this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.currentTarget.checked }));
     this.shadowRoot.querySelector("#add").addEventListener("click", () => { this._emit({ ...this._config, rooms: [...this._config.rooms, { entities: {} }] }); this._render(); });
+    this._restoreState(state);
   }
   _roomEditor(parent, room, index) {
     const panel = document.createElement("ha-expansion-panel"); panel.header = room.title || this._hass.areas?.[room.area]?.name || `Stanza ${index + 1}`; panel.outlined = true;
     const container = document.createElement("section"); container.className = "room-editor";
-    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
+    container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field"><span>Titolo personalizzato</span><ha-input data-title label="Titolo"></ha-input></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div><div class="field"><span>Sensore luminosità</span><ha-entity-picker data-illuminance label="Luminosità"></ha-entity-picker></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
     panel.append(container); parent.append(panel);
     const area = container.querySelector("[data-area]"); area.hass = this._hass; area.value = room.area || ""; this._handlePicker(area, (value) => this._updateRoom(index, { area: value || undefined }), true);
-    const title = container.querySelector("[data-title]"); title.value = room.title || ""; title.addEventListener("change", (event) => this._updateRoom(index, { title: event.target.value || undefined }));
+    const title = container.querySelector("[data-title]"); title.value = room.title || ""; title.addEventListener("change", (event) => this._updateRoom(index, { title: event.currentTarget.value || undefined }));
     const colorHolder = container.querySelector("[data-color]"); const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = room.color || defaultColor(this._hass.areas?.[room.area]?.name); this._handlePicker(color, (value) => this._updateRoom(index, { color: value })); colorHolder.append(color);
     const icon = container.querySelector("[data-icon]"); icon.hass = this._hass; icon.value = room.icon || ""; this._handlePicker(icon, (value) => this._updateRoom(index, { icon: value || undefined }));
     const motion = container.querySelector("[data-motion]"); motion.hass = this._hass; motion.value = room.motion_entity || ""; motion.includeDomains = ["binary_sensor"]; motion.includeDeviceClasses = ["motion", "occupancy", "presence"]; motion.allowCustomEntity = true; this._handlePicker(motion, (value) => this._updateRoom(index, { motion_entity: value || undefined }));
     const opening = container.querySelector("[data-opening]"); opening.hass = this._hass; opening.value = room.opening_entity || ""; opening.includeDomains = ["binary_sensor"]; opening.includeDeviceClasses = ["opening", "door", "window"]; opening.allowCustomEntity = true; this._handlePicker(opening, (value) => this._updateRoom(index, { opening_entity: value || undefined }));
     const tempPicker = container.querySelector("[data-temperature]"); tempPicker.hass = this._hass; tempPicker.value = room.temperature_entity || ""; tempPicker.includeDomains = ["sensor"]; tempPicker.includeDeviceClasses = ["temperature"]; tempPicker.allowCustomEntity = true; this._handlePicker(tempPicker, (value) => this._updateRoom(index, { temperature_entity: value || undefined }));
     const humPicker = container.querySelector("[data-humidity]"); humPicker.hass = this._hass; humPicker.value = room.humidity_entity || ""; humPicker.includeDomains = ["sensor"]; humPicker.includeDeviceClasses = ["humidity"]; humPicker.allowCustomEntity = true; this._handlePicker(humPicker, (value) => this._updateRoom(index, { humidity_entity: value || undefined }));
+    const luxPicker = container.querySelector("[data-illuminance]"); luxPicker.hass = this._hass; luxPicker.value = room.illuminance_entity || ""; luxPicker.includeDomains = ["sensor"]; luxPicker.includeDeviceClasses = ["illuminance"]; luxPicker.allowCustomEntity = true; this._handlePicker(luxPicker, (value) => this._updateRoom(index, { illuminance_entity: value || undefined }));
     Object.entries(CATEGORIES).forEach(([key, meta]) => {
       const category = document.createElement("section"); category.className = "category"; category.innerHTML = `<span class="category-title">${meta.label}</span>`; container.querySelector(".entities").append(category);
       const domains = meta.domains || [meta.domain];
@@ -282,7 +317,7 @@ class CustomRoomCardEditor extends HTMLElement {
       const selectedArray = Array.isArray(rawSelected) ? rawSelected : (rawSelected ? [rawSelected] : []);
       const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
       const set = (next) => this._updateRoom(index, { entities: { ...(room.entities || {}), [key]: next } });
-      selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, (value) => set(selected.map((item, i) => i === entityIndex ? value : item)), () => set(selected.filter((_, i) => i !== entityIndex))));
+      selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, (value) => set(selected.map((item, i) => i === entityIndex ? value : item)), () => set(selected.filter((_, i) => i !== entityIndex)), index, key, entityIndex));
       this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => set([...selected, { entity: value }]));
     });
     const up = container.querySelector("[data-up]"); up.disabled = index === 0; up.addEventListener("click", () => this._moveRoom(index, -1));
