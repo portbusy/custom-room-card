@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "0.3.5";
+const VERSION = "0.3.6";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
@@ -97,9 +97,25 @@ class CustomRoomCard extends HTMLElement {
     }
     this._monitoredEntities = Array.from(entities);
   }
+  _buildAreaEntitiesCache() {
+    if (!this._hass) return;
+    const cache = {};
+    const devices = this._hass.devices || {};
+    Object.values(this._hass.entities || {}).forEach((e) => {
+      const areaId = e.area_id || (e.device_id && devices[e.device_id]?.area_id);
+      if (areaId) {
+        if (!cache[areaId]) cache[areaId] = [];
+        if (this._hass.states[e.entity_id]) {
+          cache[areaId].push(e.entity_id);
+        }
+      }
+    });
+    this._areaEntitiesCache = cache;
+  }
   set hass(hass) {
     const oldHass = this._hass;
     this._hass = hass;
+    this._buildAreaEntitiesCache();
     this._updateMonitoredEntities();
     if (!oldHass) {
       this._render();
@@ -132,8 +148,7 @@ class CustomRoomCard extends HTMLElement {
   }
   getCardSize() { return Math.max(2, (this._config?.rooms?.length || 1) * 2); }
   _areaIds(area) {
-    const devices = this._hass.devices || {};
-    return Object.values(this._hass.entities || {}).filter((e) => e.area_id === area || (e.device_id && devices[e.device_id]?.area_id === area)).map((e) => e.entity_id).filter((id) => this._hass.states[id]);
+    return this._areaEntitiesCache?.[area] || [];
   }
   _sensor(ids, classes) { return ids.map((id) => this._hass.states[id]).find((s) => classes.includes(s?.attributes?.device_class) && !OFF.has(s?.state)); }
   _motion(room, ids) { return room.motion_entity ? this._hass.states[room.motion_entity] : this._sensor(ids, ["motion", "occupancy", "presence"]); }
