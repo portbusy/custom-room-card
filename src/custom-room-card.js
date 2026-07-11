@@ -386,7 +386,7 @@ const EDITOR_STYLE = `
     flex-direction: column;
     gap: 20px;
     padding: 16px;
-    background: var(--card-background-color);
+    background: var(--card-background-color, var(--primary-background-color, #fff));
     border-radius: var(--ha-card-border-radius, 12px);
     border: 1px solid var(--divider-color);
     color: var(--primary-text-color);
@@ -418,8 +418,8 @@ const EDITOR_STYLE = `
   .controls select {
     padding: 6px 12px;
     border-radius: 8px;
-    border: 1px solid var(--ha-card-border-color, var(--divider-color));
-    background: var(--secondary-background-color, var(--card-background-color));
+    border: 1px solid var(--divider-color);
+    background: var(--secondary-background-color, var(--card-background-color, #fafafa));
     color: var(--primary-text-color);
     font-family: inherit;
     font-size: 0.95em;
@@ -430,14 +430,20 @@ const EDITOR_STYLE = `
   .controls select:focus {
     border-color: var(--primary-color);
   }
+  #rooms {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
   ha-expansion-panel {
     display: block;
     --ha-expansion-panel-summary-padding: 0 16px;
-    border-radius: var(--ha-card-border-radius, 12px);
-    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    --ha-card-border-color: var(--divider-color) !important;
+    --ha-card-background: var(--secondary-background-color, var(--card-background-color, #fafafa)) !important;
+    --card-background-color: var(--secondary-background-color, var(--card-background-color, #fafafa)) !important;
+    border-radius: var(--ha-card-border-radius, 12px) !important;
     overflow: hidden;
     margin-bottom: 8px;
-    background: var(--ha-card-background, var(--card-background-color, white));
   }
   .room-editor {
     display: flex;
@@ -486,9 +492,9 @@ const EDITOR_STYLE = `
     flex-direction: column;
     gap: 12px;
     padding: 16px;
-    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    border: 1px solid var(--divider-color);
     border-radius: var(--ha-card-border-radius, 12px);
-    background: var(--secondary-background-color, var(--card-background-color));
+    background: var(--secondary-background-color, var(--card-background-color, #fafafa));
   }
   .category-header {
     display: flex;
@@ -535,9 +541,9 @@ const EDITOR_STYLE = `
   }
   details {
     margin-top: 8px;
-    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    border: 1px solid var(--divider-color);
     border-radius: var(--ha-card-border-radius, 8px);
-    background: var(--ha-card-background, var(--card-background-color, white));
+    background: var(--ha-card-background, var(--card-background-color, #fff));
     overflow: hidden;
   }
   details summary {
@@ -567,9 +573,9 @@ const EDITOR_STYLE = `
     flex-direction: column;
     gap: 12px;
     padding: 16px;
-    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    border: 1px solid var(--divider-color);
     border-radius: var(--ha-card-border-radius, 12px);
-    background: var(--secondary-background-color, var(--card-background-color));
+    background: var(--secondary-background-color, var(--card-background-color, #fafafa));
   }
   .category-order-section h5 {
     margin: 0;
@@ -587,8 +593,8 @@ const EDITOR_STYLE = `
     justify-content: space-between;
     padding: 8px 12px;
     border-radius: var(--ha-card-border-radius, 8px);
-    background: var(--secondary-background-color, var(--card-background-color));
-    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    background: var(--secondary-background-color, var(--card-background-color, #fafafa));
+    border: 1px solid var(--divider-color);
   }
   .category-order-info {
     display: flex;
