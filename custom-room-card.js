@@ -1134,10 +1134,14 @@ var CustomRoomCardEditor = class extends HTMLElement {
     this._render();
   }
   _handlePicker(picker, callback, rerender = false) {
+    let lastValue = picker.value;
     picker.addEventListener("value-changed", (event) => {
       if (event.target !== picker) return;
-      picker.value = event.detail.value;
-      callback(event.detail.value);
+      const newValue = event.detail.value;
+      if (newValue === lastValue) return;
+      lastValue = newValue;
+      picker.value = newValue;
+      callback(newValue);
       if (rerender) this._render();
     });
   }
@@ -1634,6 +1638,35 @@ var CustomRoomCardEditor = class extends HTMLElement {
       holdAction.value = room.hold_action || { action: "none" };
       this._handlePicker(holdAction, (value) => this._updateRoom(index, { hold_action: value || void 0 }));
       holdActionHolder.append(holdAction);
+      const summarySec = document.createElement("div");
+      summarySec.className = "summary-entities-section";
+      summarySec.style.display = "flex";
+      summarySec.style.flexDirection = "column";
+      summarySec.style.gap = "12px";
+      summarySec.style.marginBottom = "16px";
+      summarySec.innerHTML = `<div class="editor-section-title" style="margin-top: 0;">Entit\xE0 riepilogo aggiuntive</div>`;
+      const entitiesPicker = document.createElement("ha-entities-picker");
+      entitiesPicker.hass = this._hass;
+      const rawSummary = room.summary_entities || [];
+      const summaryArray = Array.isArray(rawSummary) ? rawSummary : rawSummary ? [rawSummary] : [];
+      const summaryEntities = summaryArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
+      entitiesPicker.value = summaryEntities.map((item) => item.entity);
+      entitiesPicker.addEventListener("value-changed", (event) => {
+        if (event.target !== entitiesPicker) return;
+        const newEntitiesList = event.detail.value || [];
+        const existingMap = new Map(summaryEntities.map((item) => [item.entity, item]));
+        const updated = newEntitiesList.map((id) => {
+          const existing = existingMap.get(id);
+          return existing ? existing : { entity: id };
+        });
+        this._updateRoom(index, { summary_entities: updated.length ? updated : void 0 });
+        this._render();
+      });
+      summarySec.append(entitiesPicker);
+      summaryEntities.forEach((item, entityIndex) => {
+        this._selectedSummaryEntityRow(summarySec, item, index, entityIndex);
+      });
+      container.insertBefore(summarySec, container.querySelector(".entities"));
       const defaultOrder = ["lights", "covers", "climate", "media", "switches"];
       const order = this._config.category_order || defaultOrder;
       order.forEach((key) => {
@@ -1650,15 +1683,6 @@ var CustomRoomCardEditor = class extends HTMLElement {
         selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, index, key, entityIndex));
         this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => this._addChip(index, key, value));
       });
-      const summarySec = document.createElement("section");
-      summarySec.className = "category";
-      summarySec.innerHTML = `<div class="category-header"><ha-icon icon="mdi:format-list-bulleted"></ha-icon><span class="category-title">Entit\xE0 riepilogo aggiuntive</span></div>`;
-      container.querySelector(".entities").append(summarySec);
-      const rawSummary = room.summary_entities || [];
-      const summaryArray = Array.isArray(rawSummary) ? rawSummary : rawSummary ? [rawSummary] : [];
-      const summaryEntities = summaryArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
-      summaryEntities.forEach((item, entityIndex) => this._selectedSummaryEntityRow(summarySec, item, index, entityIndex));
-      this._addEntityPicker(summarySec, "Aggiungi entit\xE0 al riepilogo", null, (value) => this._addSummaryEntity(index, value));
       const details = document.createElement("details");
       details.setAttribute("data-details-id", `room-${index}-visibility`);
       const summary = document.createElement("summary");
@@ -1722,23 +1746,6 @@ var CustomRoomCardEditor = class extends HTMLElement {
     }
     parent.append(panel);
   }
-  _addSummaryEntity(roomIndex, entityId) {
-    const rooms = [...this._config.rooms || []];
-    const room = { ...rooms[roomIndex] };
-    const summary_entities = [...room.summary_entities || []];
-    summary_entities.push({ entity: entityId });
-    room.summary_entities = summary_entities;
-    rooms[roomIndex] = room;
-    this._emit({ ...this._config, rooms });
-  }
-  _removeSummaryEntity(roomIndex, entityIndex) {
-    const rooms = [...this._config.rooms || []];
-    const room = { ...rooms[roomIndex] };
-    const summary_entities = (room.summary_entities || []).filter((_, i) => i !== entityIndex);
-    room.summary_entities = summary_entities.length ? summary_entities : void 0;
-    rooms[roomIndex] = room;
-    this._emit({ ...this._config, rooms });
-  }
   _updateSummaryEntity(roomIndex, entityIndex, changes) {
     const rooms = [...this._config.rooms || []];
     const room = { ...rooms[roomIndex] };
@@ -1752,30 +1759,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
   _selectedSummaryEntityRow(holder, item, roomIndex, entityIndex) {
     const panel = document.createElement("ha-expansion-panel");
     const nameText = item.entity ? entityName(this._hass, item.entity) : "";
-    panel.header = nameText || `Entit\xE0 riepilogo ${entityIndex + 1}`;
+    panel.header = `${nameText || item.entity} (Personalizza)`;
     panel.outlined = true;
     panel.setAttribute("data-panel-id", `${roomIndex}-summary-${entityIndex}`);
     const renderContent = () => {
       const container = document.createElement("div");
       container.className = "entity-editor-content";
-      const main = document.createElement("div");
-      main.className = "entity-main";
-      const picker = document.createElement("ha-entity-picker");
-      picker.hass = this._hass;
-      picker.value = item.entity;
-      picker.allowCustomEntity = true;
-      this._handlePicker(picker, (value) => value ? this._updateSummaryEntity(roomIndex, entityIndex, { entity: value }) : this._removeSummaryEntity(roomIndex, entityIndex), true);
-      const remove = document.createElement("ha-icon-button");
-      remove.label = "Rimuovi entit\xE0";
-      const removeIcon = document.createElement("ha-icon");
-      removeIcon.icon = "mdi:close";
-      remove.append(removeIcon);
-      remove.addEventListener("click", () => {
-        this._removeSummaryEntity(roomIndex, entityIndex);
-        this._render();
-      });
-      main.append(picker, remove);
-      container.append(main);
       const appearanceTitle = document.createElement("div");
       appearanceTitle.className = "editor-section-title";
       appearanceTitle.textContent = "Aspetto";
@@ -1800,7 +1789,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       panel.append(container);
     };
     const state = this._saveState();
-    if (state.expandedPanels.has(panel.getAttribute("data-panel-id"))) {
+    if (state.expandedChips.includes(panel.getAttribute("data-panel-id"))) {
       panel.expanded = true;
       renderContent();
     } else {
@@ -1816,14 +1805,6 @@ var CustomRoomCardEditor = class extends HTMLElement {
       }
     };
     panel.addEventListener("pointerdown", triggerRender);
-    panel.addEventListener("expanded-changed", (event) => {
-      const pId = panel.getAttribute("data-panel-id");
-      if (event.detail.expanded) {
-        this._expandedPanels.add(pId);
-      } else {
-        this._expandedPanels.delete(pId);
-      }
-    });
     holder.append(panel);
   }
 };
