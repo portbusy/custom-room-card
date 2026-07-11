@@ -65,8 +65,8 @@ var EDITOR_STYLE = `
   .controls select {
     padding: 6px 12px;
     border-radius: 8px;
-    border: 1px solid var(--input-outlined-idle-border-color, var(--divider-color));
-    background: var(--card-background-color);
+    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    background: var(--secondary-background-color, var(--card-background-color));
     color: var(--primary-text-color);
     font-family: inherit;
     font-size: 0.95em;
@@ -80,10 +80,11 @@ var EDITOR_STYLE = `
   ha-expansion-panel {
     display: block;
     --ha-expansion-panel-summary-padding: 0 16px;
-    border-radius: 12px;
+    border-radius: var(--ha-card-border-radius, 12px);
+    border: 1px solid var(--ha-card-border-color, var(--divider-color));
     overflow: hidden;
     margin-bottom: 8px;
-    background: var(--card-background-color);
+    background: var(--ha-card-background, var(--card-background-color, white));
   }
   .room-editor {
     display: flex;
@@ -132,9 +133,9 @@ var EDITOR_STYLE = `
     flex-direction: column;
     gap: 12px;
     padding: 16px;
-    border: 1px solid var(--divider-color);
-    border-radius: 12px;
-    background: var(--clear-background-color, var(--background-color-2, var(--card-background-color)));
+    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    border-radius: var(--ha-card-border-radius, 12px);
+    background: var(--secondary-background-color, var(--card-background-color));
   }
   .category-header {
     display: flex;
@@ -181,9 +182,9 @@ var EDITOR_STYLE = `
   }
   details {
     margin-top: 8px;
-    border: 1px solid var(--divider-color);
-    border-radius: 8px;
-    background: var(--card-background-color);
+    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    border-radius: var(--ha-card-border-radius, 8px);
+    background: var(--ha-card-background, var(--card-background-color, white));
     overflow: hidden;
   }
   details summary {
@@ -193,7 +194,7 @@ var EDITOR_STYLE = `
     font-size: 0.9em;
     color: var(--primary-text-color);
     user-select: none;
-    background: var(--clear-background-color, var(--divider-color));
+    background: var(--secondary-background-color, var(--divider-color));
     outline: none;
   }
   details ha-card-conditions-editor {
@@ -213,9 +214,9 @@ var EDITOR_STYLE = `
     flex-direction: column;
     gap: 12px;
     padding: 16px;
-    border: 1px solid var(--divider-color);
-    border-radius: 12px;
-    background: var(--card-background-color);
+    border: 1px solid var(--ha-card-border-color, var(--divider-color));
+    border-radius: var(--ha-card-border-radius, 12px);
+    background: var(--secondary-background-color, var(--card-background-color));
   }
   .category-order-section h5 {
     margin: 0;
@@ -232,9 +233,9 @@ var EDITOR_STYLE = `
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    border-radius: 8px;
-    background: var(--clear-background-color, var(--background-color-2, var(--card-background-color)));
-    border: 1px solid var(--divider-color);
+    border-radius: var(--ha-card-border-radius, 8px);
+    background: var(--secondary-background-color, var(--card-background-color));
+    border: 1px solid var(--ha-card-border-color, var(--divider-color));
   }
   .category-order-info {
     display: flex;
@@ -1104,6 +1105,11 @@ var CustomRoomCardEditor = class extends HTMLElement {
   set hass(hass) {
     const needsInitialRender = !this._hass && this._config;
     this._hass = hass;
+    if (this.shadowRoot) {
+      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-entities-picker, ha-icon-picker, ha-area-picker, ha-selector, ha-card-conditions-editor").forEach((picker) => {
+        picker.hass = hass;
+      });
+    }
     if (needsInitialRender) {
       this._render();
       if (hass && typeof hass.loadBackendTranslation === "function") {
