@@ -8,7 +8,7 @@
   <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=portbusy&repository=custom-room-card&category=plugin"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
 </p>
 
-A premium, highly-configurable, and theme-consistent Lovelace multi-room card for Home Assistant. Configure your rooms, headers, quick control chips, visibility conditions, and custom tap/hold actions directly from the Home Assistant visual editor or via YAML.
+A Lovelace card for Home Assistant to display and manage multiple rooms. It supports visual configuration, quick control chips, visibility conditions, and custom tap/hold actions.
 
 No external dependencies (such as `button-card`, `mushroom`, `card-mod`, or `stack-in-card`) are required.
 
@@ -16,16 +16,16 @@ No external dependencies (such as `button-card`, `mushroom`, `card-mod`, or `sta
 
 ## Key Features
 
-* ⚡ **Native Visual Editor**: Configure everything visually! Pick areas, select entities, choose custom colors, order categories, and edit visibility conditions without typing a single line of YAML.
-* 🎨 **100% Theme-Consistent**: Completely styled using native Home Assistant CSS custom properties (`--ha-card-background`, `--secondary-background-color`, `--ha-card-border-radius`, `--ha-card-border-color`). Automatically blends into light, dark, warm, or custom dashboards.
-* 🌐 **Multi-Language Support**: Automatically localizes its user interface, greetings, and labels based on your Home Assistant profile language. Out-of-the-box support for **English (`en`)**, **Italian (`it`)**, **French (`fr`)**, **Spanish (`es`)**, and **German (`de`)**.
-* 🌡️ **Rich Header Info**: Shows presence status (motion icon), door/window status (opening icon), temperature, humidity, and illuminance (lux) dynamically in the room title.
-* 🏃 **Motion Sorting**: Automatically prioritizes active rooms by moving those with detected motion to the top of the dashboard.
-* ⏱️ **Presence Activity Tracking**: Displays relative time since motion was last detected (e.g., "now", "10m ago", "2h ago") next to the room title.
-* 🎛️ **Quick Controls (Chips)**: Configurable action chips grouped by categories (Lights, Covers, Climate, Media, Switches) for immediate control. Tapping a light or switch toggles it immediately, while tapping other categories opens their respective details dialog.
-* 👁️ **Conditional Visibility**: Leverage the native, nested Home Assistant visibility editor (`ha-card-conditions-editor`) to dynamically hide or show rooms and individual chips based on user state, numeric values, entity states, location, or screen size.
-* 📝 **Template Support**: Customize entity names and labels dynamically using Home Assistant jinja template values (e.g. `{{ states('sensor.custom_label') }}`).
-* 🌦️ **Weather Header Mode**: Optionally configure a beautiful, cohesive animated weather banner to act as the main header for your room cards dashboard.
+* **Visual Editor**: Configure rooms, entities, colors, category ordering, and visibility conditions directly in the UI.
+* **Theme Integration**: Uses native Home Assistant CSS custom properties (`--ha-card-background`, `--secondary-background-color`, etc.) to match active dashboards.
+* **Localization**: Translates UI labels and greetings based on user profile settings. Supports English (`en`), Italian (`it`), French (`fr`), Spanish (`es`), and German (`de`).
+* **Header Summary**: Displays room presence (motion), door/window state, temperature, humidity, and light level (lux) in the header.
+* **Motion Sorting**: Moves rooms with active presence to the top of the card automatically.
+* **Activity Tracking**: Shows time elapsed since motion was last detected (e.g., "now", "10m ago").
+* **Quick Control Chips**: Quick-action chips grouped by category (lights, covers, climate, media, switches). Tapping toggles light/switch entities or opens details dialogs. For `input_select` and `select` entities, you can enable a native dropdown menu directly from the chip without opening dialogs.
+* **Conditional Visibility**: Integrates with the native Home Assistant visibility editor (`ha-card-conditions-editor`) to hide or show rooms and individual chips.
+* **Template Support**: Supports Home Assistant templates (e.g., `{{ states('sensor.label') }}`) for custom labels and entity names.
+* **Weather Banner**: Optional animated weather banner at the top of the card.
 
 ---
 
@@ -60,7 +60,7 @@ No external dependencies (such as `button-card`, `mushroom`, `card-mod`, or `sta
 
 ## Configuration
 
-The visual editor handles all configurations natively. However, you can also define your dashboard using YAML:
+You can configure this card using the visual editor or define it via YAML:
 
 ### Rooms Mode Configuration Example
 
@@ -160,7 +160,7 @@ chips:
 
 ## Local Development
 
-If you want to contribute or build your own customized version:
+To run or build the project locally:
 
 1. Clone this repository locally.
 2. Install dependencies:

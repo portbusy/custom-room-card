@@ -104,7 +104,8 @@ var TRANSLATIONS = {
     sunset_sensor: "Sunset sensor",
     room: "Room",
     entities_by_category: "Entities by category",
-    actions: "Actions"
+    actions: "Actions",
+    show_dropdown: "Show dropdown list"
   },
   it: {
     empty_card: "Aggiungi una stanza dalla configurazione della card.",
@@ -160,7 +161,8 @@ var TRANSLATIONS = {
     sunset_sensor: "Tramonto (sun.sun)",
     room: "Stanza",
     entities_by_category: "Entit\xE0 per categoria",
-    actions: "Azioni"
+    actions: "Azioni",
+    show_dropdown: "Mostra menu a discesa"
   },
   fr: {
     empty_card: "Ajoutez une pi\xE8ce depuis la configuration de la carte.",
@@ -195,7 +197,7 @@ var TRANSLATIONS = {
     switches: "Interrupteurs",
     appearance: "Apparence",
     label_optional: "\xC9tiquette (optionnel)",
-    active_icon: "Ic\xF4ne active",
+    active_icon: "Icona active",
     visibility_conditions: "Conditions de visibilit\xE9",
     room_visibility_conditions: "Conditions de visibilit\xE9 de la pi\xE8ce",
     additional_summary_entities: "Entit\xE9s de r\xE9sum\xE9 suppl\xE9mentaires",
@@ -216,7 +218,8 @@ var TRANSLATIONS = {
     sunset_sensor: "Capteur de coucher du soleil",
     room: "Pi\xE8ce",
     entities_by_category: "Entit\xE9s par cat\xE9gorie",
-    actions: "Actions"
+    actions: "Actions",
+    show_dropdown: "Afficher la liste d\xE9roulante"
   },
   es: {
     empty_card: "Agrega una habitaci\xF3n desde la configuraci\xF3n de la tarjeta.",
@@ -231,7 +234,7 @@ var TRANSLATIONS = {
     weather: "Meteorolog\xEDa",
     sort_by_motion: "Ordenar habitaciones por movimiento",
     show_entity_icons: "Usar iconos reales de entidades",
-    category_order: "Orden de categor\xEDas",
+    category_order: "Orden de cat\xE9gories",
     add_room: "Agregar habitaci\xF3n",
     area: "Zona",
     custom_title: "T\xEDtulo personalizado",
@@ -272,7 +275,8 @@ var TRANSLATIONS = {
     sunset_sensor: "Sensor de puesta de sol",
     room: "Habitaci\xF3n",
     entities_by_category: "Entidades por categor\xEDa",
-    actions: "Acciones"
+    actions: "Acciones",
+    show_dropdown: "Mostrar men\xFA desplegable"
   },
   de: {
     empty_card: "F\xFCge einen Raum in der Kartenkonfiguration hinzu.",
@@ -328,7 +332,8 @@ var TRANSLATIONS = {
     sunset_sensor: "Sonnenuntergangs-Sensor",
     room: "Raum",
     entities_by_category: "Entit\xE4ten nach Kategorie",
-    actions: "Aktionen"
+    actions: "Aktionen",
+    show_dropdown: "Dropdown-Liste anzeigen"
   }
 };
 function localize(hass, key) {
@@ -338,6 +343,35 @@ function localize(hass, key) {
 }
 var CARD_STYLE = `
   :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;width:100%}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
+  .chip-dropdown {
+    position: relative;
+    padding-right: 22px !important;
+  }
+  .chip-dropdown::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-25%);
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--secondary-text-color);
+    pointer-events: none;
+  }
+  .chip-dropdown.active::after {
+    border-top-color: var(--chip-active, #ffb300);
+  }
+  .chip-select-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
 `;
 var EDITOR_STYLE = `
   :host {
@@ -1249,6 +1283,22 @@ var CustomRoomCard = class extends HTMLElement {
       });
     }
     this.shadowRoot.querySelectorAll(".chip").forEach((button) => {
+      const isDropdown = button.classList.contains("chip-dropdown");
+      if (isDropdown) {
+        const select = button.querySelector(".chip-select-overlay");
+        if (select) {
+          select.addEventListener("change", (event) => {
+            const entityId = select.dataset.entity;
+            const value = event.target.value;
+            const domain = entityId.split(".")[0];
+            this._hass.callService(domain, "select_option", {
+              entity_id: entityId,
+              option: value
+            });
+          });
+        }
+        return;
+      }
       const roomIndex = Number.parseInt(button.dataset.roomIndex);
       const category = button.dataset.category;
       const chipIndex = Number.parseInt(button.dataset.chipIndex);
@@ -1342,6 +1392,12 @@ var CustomRoomCard = class extends HTMLElement {
     const templateKey = `${chip.roomIndex}-${chip.category}-${chip.chipIndex}`;
     const hasTemplate = chip.name && (chip.name.includes("{{") || chip.name.includes("{%"));
     const label = hasTemplate ? this._renderedTemplates?.[templateKey] !== void 0 ? this._renderedTemplates[templateKey] : "" : chip.name || entityName(this._hass, id);
+    const isDropdown = chip.dropdown && (domain === "input_select" || domain === "select") && stateObj?.attributes?.options;
+    if (isDropdown) {
+      const options = stateObj.attributes.options || [];
+      const optionTags = options.map((opt) => `<option value="${escape(opt)}" ${opt === stateObj.state ? "selected" : ""}>${escape(opt)}</option>`).join("");
+      return `<div class="chip chip-dropdown ${active ? "active" : ""}" style="--chip-active:${escape(chip.color || "#ffb300")}" data-entity="${escape(id)}" data-domain="${escape(domain)}" data-room-index="${chip.roomIndex}" data-category="${escape(chip.category)}" data-chip-index="${chip.chipIndex}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(label)}</span><select class="chip-select-overlay" data-entity="${escape(id)}">${optionTags}</select></div>`;
+    }
     return `<button class="chip ${active ? "active" : ""}" style="--chip-active:${escape(chip.color || "#ffb300")}" data-entity="${escape(id)}" data-domain="${escape(domain)}" data-room-index="${chip.roomIndex}" data-category="${escape(chip.category)}" data-chip-index="${chip.chipIndex}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(label)}</span></button>`;
   }
   _fire(type, detail) {
@@ -1643,6 +1699,17 @@ var CustomRoomCardEditor = class extends HTMLElement {
       this._handlePicker(holdAction, (value) => this._updateChip(roomIndex, category, entityIndex, { hold_action: value || void 0 }));
       actionsGrid.append(tapAction, holdAction);
       container.append(actionsGrid);
+      if (chip.entity && (chip.entity.startsWith("input_select.") || chip.entity.startsWith("select."))) {
+        const dropdownItem = document.createElement("div");
+        dropdownItem.className = "control-item";
+        dropdownItem.style.marginTop = "8px";
+        dropdownItem.style.padding = "0 8px";
+        dropdownItem.innerHTML = `<ha-switch id="dropdown" ${chip.dropdown ? "checked" : ""}></ha-switch><label for="dropdown" style="margin-left:8px;">${localize(this._hass, "show_dropdown")}</label>`;
+        dropdownItem.querySelector("#dropdown").addEventListener("change", (event) => {
+          this._updateChip(roomIndex, category, entityIndex, { dropdown: event.currentTarget.checked });
+        });
+        container.append(dropdownItem);
+      }
       const details = document.createElement("details");
       details.setAttribute("data-details-id", `${roomIndex}-${category}-${entityIndex}`);
       const summary = document.createElement("summary");
@@ -1717,11 +1784,11 @@ var CustomRoomCardEditor = class extends HTMLElement {
     }
     const cardType = this._config.card_type || "rooms";
     if (!this.shadowRoot.querySelector(".editor")) {
-      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><div class="control-item"><span>Tipologia Card</span><select id="card-type"><option value="rooms">Stanze</option><option value="weather">Meteo</option></select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">Ordina le stanze per movimento</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">Usa icone reali delle entit\xE0</label></div></div><div class="category-order-section rooms-only"><h5>Ordinamento categorie</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">Aggiungi stanza</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
+      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><div class="control-item"><ha-select id="card-type" label="${localize(this._hass, "card_type")}"><ha-list-item value="rooms">${localize(this._hass, "rooms")}</ha-list-item><ha-list-item value="weather">${localize(this._hass, "weather")}</ha-list-item></ha-select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">${localize(this._hass, "sort_by_motion")}</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">${localize(this._hass, "show_entity_icons")}</label></div></div><div class="category-order-section rooms-only"><h5>${localize(this._hass, "category_order")}</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">${localize(this._hass, "add_room")}</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
       const typeSelect = this.shadowRoot.querySelector("#card-type");
       typeSelect.value = cardType;
       typeSelect.addEventListener("change", (event) => {
-        const val = event.currentTarget.value;
+        const val = event.target.value;
         this._emit({ ...this._config, card_type: val });
         this._render();
       });
