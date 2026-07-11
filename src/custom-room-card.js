@@ -386,7 +386,7 @@ const EDITOR_STYLE = `
     flex-direction: column;
     gap: 20px;
     padding: 16px;
-    background: var(--card-background-color, var(--primary-background-color, #fff));
+    background: var(--primary-background-color, #fafafa);
     border-radius: var(--ha-card-border-radius, 12px);
     border: 1px solid var(--divider-color);
     color: var(--primary-text-color);
@@ -438,10 +438,9 @@ const EDITOR_STYLE = `
   ha-expansion-panel {
     display: block;
     --ha-expansion-panel-summary-padding: 0 16px;
-    --ha-card-border-color: var(--divider-color) !important;
-    --ha-card-background: var(--secondary-background-color, var(--card-background-color, #fafafa)) !important;
-    --card-background-color: var(--secondary-background-color, var(--card-background-color, #fafafa)) !important;
+    border: 1px solid var(--divider-color) !important;
     border-radius: var(--ha-card-border-radius, 12px) !important;
+    background: var(--ha-card-background, var(--card-background-color, #fff)) !important;
     overflow: hidden;
     margin-bottom: 8px;
   }
