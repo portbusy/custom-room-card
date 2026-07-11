@@ -25,7 +25,258 @@ const CARD_STYLE = `
   :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;width:100%}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
 `;
 const EDITOR_STYLE = `
-  :host{display:block;container-type:inline-size}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:1fr;gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:1fr;gap:12px}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:8px}.category-order-section{margin-top:4px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-order-section h5{margin:0 0 8px 0;font-size:0.85em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px}.category-order-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-bottom:1px solid var(--divider-color)}.category-order-row:last-child{border-bottom:none}.category-order-info{display:flex;align-items:center;gap:8px;font-size:0.9em;font-weight:500}.category-order-info ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.category-order-actions{display:flex;align-items:center;gap:4px}.category-order-actions ha-icon-button{--mdc-icon-button-size:28px;--mdc-icon-size:18px}.editor:not(.mode-rooms) .rooms-only{display:none!important}.editor:not(.mode-weather) .weather-only{display:none!important}.weather-editor-container{display:grid;gap:16px}.controls select{padding:6px 10px;border-radius:4px;border:1px solid var(--input-outlined-idle-border-color,var(--divider-color));background:var(--card-background-color);color:var(--primary-text-color);font-family:inherit;font-size:0.9em;cursor:pointer}.field.full-width{grid-column:1 / -1}.full-width-field{display:block;margin-bottom:8px}@container (min-width:560px){.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.chip-options{grid-template-columns:repeat(2,minmax(0,1fr))}.chip-conditions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  :host {
+    display: block;
+    container-type: inline-size;
+  }
+  .editor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px;
+    font-family: var(--paper-font-body1_-_font-family, inherit);
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--divider-color);
+  }
+  .control-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95em;
+  }
+  .control-item > span {
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+  .control-item label {
+    cursor: pointer;
+    user-select: none;
+    color: var(--primary-text-color);
+  }
+  .controls select {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--input-outlined-idle-border-color, var(--divider-color));
+    background: var(--card-background-color);
+    color: var(--primary-text-color);
+    font-family: inherit;
+    font-size: 0.95em;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .controls select:focus {
+    border-color: var(--primary-color);
+  }
+  ha-expansion-panel {
+    display: block;
+    --ha-expansion-panel-summary-padding: 0 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    background: var(--card-background-color);
+  }
+  .room-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border-top: 1px solid var(--divider-color);
+  }
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field > span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+  .full-width-field {
+    display: block;
+    width: 100%;
+  }
+  .entities {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .entities h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--divider-color);
+    padding-bottom: 6px;
+  }
+  .category {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    background: var(--clear-background-color, var(--background-color-2, var(--card-background-color)));
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--primary-text-color);
+  }
+  .category-header ha-icon {
+    --mdc-icon-size: 20px;
+    color: var(--primary-color);
+  }
+  .entity-editor-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 12px 12px;
+    border-top: 1px dashed var(--divider-color);
+    margin-top: 8px;
+  }
+  .entity-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .entity-main ha-entity-picker {
+    flex-grow: 1;
+  }
+  .editor-section-title {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-top: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--divider-color);
+  }
+  .chip-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  details {
+    margin-top: 8px;
+    border: 1px solid var(--divider-color);
+    border-radius: 8px;
+    background: var(--card-background-color);
+    overflow: hidden;
+  }
+  details summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9em;
+    color: var(--primary-text-color);
+    user-select: none;
+    background: var(--clear-background-color, var(--divider-color));
+    outline: none;
+  }
+  details ha-card-conditions-editor {
+    display: block;
+    padding: 14px;
+  }
+  .room-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--divider-color);
+  }
+  .category-order-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    background: var(--card-background-color);
+  }
+  .category-order-section h5 {
+    margin: 0;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--divider-color);
+    padding-bottom: 6px;
+  }
+  .category-order-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--clear-background-color, var(--background-color-2, var(--card-background-color)));
+    border: 1px solid var(--divider-color);
+  }
+  .category-order-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+  .category-order-info ha-icon {
+    --mdc-icon-size: 18px;
+    color: var(--secondary-text-color);
+  }
+  .category-order-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .category-order-actions ha-icon-button {
+    --mdc-icon-button-size: 28px;
+    --mdc-icon-size: 18px;
+  }
+  .editor:not(.mode-rooms) .rooms-only {
+    display: none !important;
+  }
+  .editor:not(.mode-weather) .weather-only {
+    display: none !important;
+  }
+  .weather-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .field.full-width {
+    grid-column: 1 / -1;
+  }
+  @container (min-width: 560px) {
+    .fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+    .chip-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+  }
 `;
 
 function formatState(stateObj, suffix, digits = null) {
@@ -1211,16 +1462,16 @@ class CustomRoomCardEditor extends HTMLElement {
     container.className = "weather-editor-container";
     container.innerHTML = `
       <div class="fields">
-        <div class="field"><span>Temp. Apparente</span><ha-entity-picker data-temp label="Temperatura Apparente"></ha-entity-picker></div>
-        <div class="field"><span>Condizione Tradotta</span><ha-entity-picker data-cond label="Condizione"></ha-entity-picker></div>
-        <div class="field"><span>Max Giornaliera</span><ha-entity-picker data-high label="Massima"></ha-entity-picker></div>
-        <div class="field"><span>Min Notturna</span><ha-entity-picker data-low label="Minima"></ha-entity-picker></div>
-        <div class="field"><span>Prob. Precipitazioni</span><ha-entity-picker data-precip label="Pioggia %"></ha-entity-picker></div>
-        <div class="field"><span>Icona Animata</span><ha-entity-picker data-icon label="Icona"></ha-entity-picker></div>
-        <div class="field"><span>Tramonto (Sun)</span><ha-entity-picker data-sunset label="Sunset"></ha-entity-picker></div>
-        <div class="field" data-color><span>Colore base</span></div>
-        <div class="field" data-tap-action><span>Azione tocco</span></div>
-        <div class="field" data-hold-action><span>Pressione prolungata</span></div>
+        <div class="field"><ha-entity-picker data-temp label="Temperatura apparente"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-cond label="Condizione tradotta"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-high label="Temperatura massima"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-low label="Temperatura minima"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-precip label="Probabilità precipitazioni"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-icon label="Icona animata"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-sunset label="Tramonto (sun.sun)"></ha-entity-picker></div>
+        <div class="field" data-color></div>
+        <div class="field" data-tap-action></div>
+        <div class="field" data-hold-action></div>
       </div>
       <div class="entities">
         <h4>Chips</h4>
@@ -1237,7 +1488,7 @@ class CustomRoomCardEditor extends HTMLElement {
     const icon = container.querySelector("[data-icon]"); icon.hass = this._hass; icon.value = this._config.weather_icon_entity || ""; this._handlePicker(icon, (value) => this._emit({ ...this._config, weather_icon_entity: value || undefined }));
     const sunset = container.querySelector("[data-sunset]"); sunset.hass = this._hass; sunset.value = this._config.sunset_entity || "sun.sun"; this._handlePicker(sunset, (value) => this._emit({ ...this._config, sunset_entity: value || undefined }));
     
-    const colorHolder = container.querySelector("[data-color]"); const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = this._config.color || "#1a365d"; this._handlePicker(color, (value) => this._emit({ ...this._config, color: value })); colorHolder.append(color);
+    const colorHolder = container.querySelector("[data-color]"); const color = document.createElement("ha-selector"); color.hass = this._hass; color.label = "Colore base"; color.selector = { ui_color: {} }; color.value = this._config.color || "#1a365d"; this._handlePicker(color, (value) => this._emit({ ...this._config, color: value })); colorHolder.append(color);
     
     const tapActionHolder = container.querySelector("[data-tap-action]");
     const tapAction = document.createElement("ha-selector"); tapAction.hass = this._hass; tapAction.label = "Azione tocco"; tapAction.selector = { ui_action: {} }; tapAction.value = this._config.tap_action || { action: "navigate", navigation_path: "#meteo" }; this._handlePicker(tapAction, (value) => this._emit({ ...this._config, tap_action: value || undefined })); tapActionHolder.append(tapAction);
@@ -1275,15 +1526,15 @@ class CustomRoomCardEditor extends HTMLElement {
     
     const renderRoomContent = () => {
       const container = document.createElement("section"); container.className = "room-editor";
-      container.innerHTML = `<div class="fields"><div class="field"><span>Area</span><ha-area-picker data-area></ha-area-picker></div><div class="field full-width" data-title><span>Titolo personalizzato</span></div><div class="field" data-color><span>Colore base</span></div><div class="field"><span>Icona</span><ha-icon-picker data-icon label="Icona"></ha-icon-picker></div><div class="field"><span>Sensore movimento</span><ha-entity-picker data-motion label="Movimento"></ha-entity-picker></div><div class="field"><span>Sensore apertura</span><ha-entity-picker data-opening label="Apertura"></ha-entity-picker></div><div class="field"><span>Sensore temperatura</span><ha-entity-picker data-temperature label="Temperatura"></ha-entity-picker></div><div class="field"><span>Sensore umidità</span><ha-entity-picker data-humidity label="Umidità"></ha-entity-picker></div><div class="field"><span>Sensore luminosità</span><ha-entity-picker data-illuminance label="Luminosità"></ha-entity-picker></div><div class="field" data-tap-action><span>Azione tocco</span></div><div class="field" data-hold-action><span>Pressione prolungata</span></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
+      container.innerHTML = `<div class="fields"><div class="field"><ha-area-picker data-area label="Area"></ha-area-picker></div><div class="field full-width" data-title></div><div class="field" data-color></div><div class="field"><ha-icon-picker data-icon label="Icona (opzionale)"></ha-icon-picker></div><div class="field"><ha-entity-picker data-motion label="Sensore di movimento"></ha-entity-picker></div><div class="field"><ha-entity-picker data-opening label="Sensore di apertura"></ha-entity-picker></div><div class="field"><ha-entity-picker data-temperature label="Sensore di temperatura"></ha-entity-picker></div><div class="field"><ha-entity-picker data-humidity label="Sensore di umidità"></ha-entity-picker></div><div class="field"><ha-entity-picker data-illuminance label="Sensore di luminosità"></ha-entity-picker></div><div class="field" data-tap-action></div><div class="field" data-hold-action></div></div><div class="entities"><h4>Entità per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
       panel.append(container);
       
-      const area = container.querySelector("[data-area]"); area.hass = this._hass; area.value = room.area || ""; this._handlePicker(area, (value) => this._updateRoom(index, { area: value || undefined }), true);
+      const area = container.querySelector("[data-area]"); area.hass = this._hass; area.label = "Area"; area.value = room.area || ""; this._handlePicker(area, (value) => this._updateRoom(index, { area: value || undefined }), true);
       
       const titleHolder = container.querySelector("[data-title]");
-      const titleSelector = document.createElement("ha-selector"); titleSelector.hass = this._hass; titleSelector.label = "Titolo"; titleSelector.selector = { template: {} }; titleSelector.value = room.title || ""; this._handlePicker(titleSelector, (value) => this._updateRoom(index, { title: value || undefined })); titleHolder.append(titleSelector);
+      const titleSelector = document.createElement("ha-selector"); titleSelector.hass = this._hass; titleSelector.label = "Titolo personalizzato"; titleSelector.selector = { template: {} }; titleSelector.value = room.title || ""; this._handlePicker(titleSelector, (value) => this._updateRoom(index, { title: value || undefined })); titleHolder.append(titleSelector);
       
-      const colorHolder = container.querySelector("[data-color]"); const color = document.createElement("ha-selector"); color.hass = this._hass; color.selector = { ui_color: {} }; color.value = room.color || defaultColor(this._hass.areas?.[room.area]?.name); this._handlePicker(color, (value) => this._updateRoom(index, { color: value })); colorHolder.append(color);
+      const colorHolder = container.querySelector("[data-color]"); const color = document.createElement("ha-selector"); color.hass = this._hass; color.label = "Colore base"; color.selector = { ui_color: {} }; color.value = room.color || defaultColor(this._hass.areas?.[room.area]?.name); this._handlePicker(color, (value) => this._updateRoom(index, { color: value })); colorHolder.append(color);
       const icon = container.querySelector("[data-icon]"); icon.hass = this._hass; icon.value = room.icon || ""; this._handlePicker(icon, (value) => this._updateRoom(index, { icon: value || undefined }));
       const motion = container.querySelector("[data-motion]"); motion.hass = this._hass; motion.value = room.motion_entity || ""; motion.includeDomains = ["binary_sensor"]; motion.includeDeviceClasses = ["motion", "occupancy", "presence"]; motion.allowCustomEntity = true; this._handlePicker(motion, (value) => this._updateRoom(index, { motion_entity: value || undefined }));
       const opening = container.querySelector("[data-opening]"); opening.hass = this._hass; opening.value = room.opening_entity || ""; opening.includeDomains = ["binary_sensor"]; opening.includeDeviceClasses = ["opening", "door", "window"]; opening.allowCustomEntity = true; this._handlePicker(opening, (value) => this._updateRoom(index, { opening_entity: value || undefined }));
