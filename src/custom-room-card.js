@@ -28,6 +28,29 @@ const EDITOR_STYLE = `
   :host{display:block;container-type:inline-size}.editor{display:grid;gap:16px;padding:16px}.controls{display:flex;align-items:center;gap:10px}.room-editor{display:grid;gap:12px;padding:14px}.room-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding-top:4px;border-top:1px solid var(--divider-color)}.fields{display:grid;grid-template-columns:1fr;gap:12px}.field{display:grid;gap:5px;font-size:.9rem}.entities{display:grid;gap:16px}.entities h4{margin:2px 0 0;font-size:.95rem}.category{display:grid;gap:8px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95em;color:var(--primary-text-color);margin-bottom:4px}.category-header ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color)}.entity-editor-content{display:grid;gap:12px;padding:12px}.entity-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.editor-section-title{font-size:0.8em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;border-bottom:1px solid var(--divider-color);padding-bottom:4px}.chip-options{display:grid;grid-template-columns:1fr;gap:12px}details{margin-top:8px;font-size:.9em}details summary{cursor:pointer;font-weight:500;color:var(--secondary-text-color)}.chip-conditions-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:8px}.category-order-section{margin-top:4px;padding:12px;border:1px solid var(--divider-color);border-radius:12px;background:var(--card-background-color)}.category-order-section h5{margin:0 0 8px 0;font-size:0.85em;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.5px}.category-order-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-bottom:1px solid var(--divider-color)}.category-order-row:last-child{border-bottom:none}.category-order-info{display:flex;align-items:center;gap:8px;font-size:0.9em;font-weight:500}.category-order-info ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.category-order-actions{display:flex;align-items:center;gap:4px}.category-order-actions ha-icon-button{--mdc-icon-button-size:28px;--mdc-icon-size:18px}.editor:not(.mode-rooms) .rooms-only{display:none!important}.editor:not(.mode-weather) .weather-only{display:none!important}.weather-editor-container{display:grid;gap:16px}.controls select{padding:6px 10px;border-radius:4px;border:1px solid var(--input-outlined-idle-border-color,var(--divider-color));background:var(--card-background-color);color:var(--primary-text-color);font-family:inherit;font-size:0.9em;cursor:pointer}.field.full-width{grid-column:1 / -1}.full-width-field{display:block;margin-bottom:8px}@container (min-width:560px){.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.chip-options{grid-template-columns:repeat(2,minmax(0,1fr))}.chip-conditions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 `;
 
+function formatState(stateObj, suffix, digits = null) {
+  if (!stateObj) return "";
+  const state = stateObj.state;
+  if (state === "unknown" || state === "unavailable") return "-";
+  const numVal = digits !== null ? number(state, digits) : state;
+  return `${escape(numVal ?? state)}${suffix}`;
+}
+
+function getDomainIcon(domain, stateObj = null) {
+  if (stateObj?.attributes?.icon) return stateObj.attributes.icon;
+  switch (domain) {
+    case "light": return "mdi:lightbulb";
+    case "switch": return "mdi:toggle-switch";
+    case "binary_sensor": return "mdi:checkbox-marked-circle";
+    case "sensor": return "mdi:eye";
+    case "cover": return "mdi:roller-shade";
+    case "fan": return "mdi:fan";
+    case "media_player": return "mdi:play";
+    case "climate": return "mdi:thermostat";
+    default: return "mdi:bookmark";
+  }
+}
+
 function defaultColor(name = "") {
   const n = name.toLowerCase();
   if (/bagno|bath/.test(n)) return "#5c9eb8";
@@ -307,6 +330,12 @@ class CustomRoomCard extends HTMLElement {
                 extractConditionEntities(conds).forEach(cid => entities.add(cid));
               }
             });
+          });
+        }
+        if (room.summary_entities) {
+          room.summary_entities.forEach(item => {
+            const id = typeof item === "string" ? item : item?.entity;
+            if (id) entities.add(id);
           });
         }
         if (room.area && this._hass) {
@@ -734,15 +763,31 @@ class CustomRoomCard extends HTMLElement {
     const lux = room.illuminance_entity ? this._hass.states[room.illuminance_entity] : this._sensor(ids, ["illuminance"]);
     const motion = this._motion(room, ids); const opening = this._opening(room, ids);
     
-    const tempValue = temp && `${escape(number(temp.state, 1) ?? temp.state)}°C`;
-    const humidityValue = humidity && `${escape(number(humidity.state) ?? humidity.state)}%`;
-    const luxValue = lux && `${escape(number(lux.state) ?? lux.state)} lx`;
+    const tempValue = temp ? formatState(temp, "°C", 1) : null;
+    const humidityValue = humidity ? formatState(humidity, "%") : null;
+    const luxValue = lux ? formatState(lux, " lx") : null;
     
-    const tempElement = temp ? `<span class="status-metric" data-entity="${escape(room.temperature_entity || temp.entity_id)}"><ha-icon icon="mdi:thermometer"></ha-icon><span>${tempValue}</span></span>` : "";
-    const humidityElement = humidity ? `<span class="status-metric" data-entity="${escape(room.humidity_entity || humidity.entity_id)}"><ha-icon icon="mdi:water-percent"></ha-icon><span>${humidityValue}</span></span>` : "";
-    const luxElement = lux ? `<span class="status-metric" data-entity="${escape(room.illuminance_entity || lux.entity_id)}"><ha-icon icon="mdi:weather-sunny"></ha-icon><span>${luxValue}</span></span>` : "";
+    const tempElement = tempValue !== null ? `<span class="status-metric" data-entity="${escape(room.temperature_entity || temp.entity_id)}"><ha-icon icon="mdi:thermometer"></ha-icon><span>${tempValue}</span></span>` : "";
+    const humidityElement = humidityValue !== null ? `<span class="status-metric" data-entity="${escape(room.humidity_entity || humidity.entity_id)}"><ha-icon icon="mdi:water-percent"></ha-icon><span>${humidityValue}</span></span>` : "";
+    const luxElement = luxValue !== null ? `<span class="status-metric" data-entity="${escape(room.illuminance_entity || lux.entity_id)}"><ha-icon icon="mdi:weather-sunny"></ha-icon><span>${luxValue}</span></span>` : "";
+
+    const customMetrics = (room.summary_entities || [])
+      .map((item) => {
+        const itemConfig = typeof item === "string" ? { entity: item } : item;
+        const stateObj = this._hass.states[itemConfig.entity];
+        if (!stateObj) return "";
+        const stateVal = stateObj.state;
+        const val = (stateVal === "unknown" || stateVal === "unavailable") ? "-" : stateVal;
+        const unit = (stateVal !== "unknown" && stateVal !== "unavailable") ? (stateObj.attributes.unit_of_measurement || "") : "";
+        const label = itemConfig.name ? `${itemConfig.name} ${val}${unit}` : `${val}${unit}`;
+        const domain = itemConfig.entity.split(".")[0];
+        const icon = itemConfig.icon || getDomainIcon(domain, stateObj);
+        return `<span class="status-metric" data-entity="${escape(itemConfig.entity)}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(label)}</span></span>`;
+      })
+      .filter(Boolean)
+      .join("");
     
-    const metrics = [tempElement, humidityElement, luxElement].filter(Boolean).join("");
+    const metrics = [tempElement, humidityElement, luxElement, customMetrics].filter(Boolean).join("");
     const status = [
       motion && `<ha-icon class="status-icon ${on(motion) ? "active" : ""}" icon="mdi:circle" data-entity="${escape(room.motion_entity || motion.entity_id)}"></ha-icon>`,
       opening && `<ha-icon class="status-icon ${on(opening) ? "active" : ""}" icon="${escape(this._openingIcon(opening))}" data-entity="${escape(room.opening_entity || opening.entity_id)}"></ha-icon>`
@@ -1268,6 +1313,15 @@ class CustomRoomCardEditor extends HTMLElement {
         selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, index, key, entityIndex));
         this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => this._addChip(index, key, value));
       });
+      const summarySec = document.createElement("section");
+      summarySec.className = "category";
+      summarySec.innerHTML = `<div class="category-header"><ha-icon icon="mdi:format-list-bulleted"></ha-icon><span class="category-title">Entità riepilogo aggiuntive</span></div>`;
+      container.querySelector(".entities").append(summarySec);
+      const rawSummary = room.summary_entities || [];
+      const summaryArray = Array.isArray(rawSummary) ? rawSummary : (rawSummary ? [rawSummary] : []);
+      const summaryEntities = summaryArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
+      summaryEntities.forEach((item, entityIndex) => this._selectedSummaryEntityRow(summarySec, item, index, entityIndex));
+      this._addEntityPicker(summarySec, "Aggiungi entità al riepilogo", null, (value) => this._addSummaryEntity(index, value));
       const details = document.createElement("details");
       details.setAttribute("data-details-id", `room-${index}-visibility`);
       const summary = document.createElement("summary"); summary.textContent = "Condizioni di visibilità stanza"; details.append(summary);
@@ -1328,6 +1382,97 @@ class CustomRoomCardEditor extends HTMLElement {
     }
 
     parent.append(panel);
+  }
+  _addSummaryEntity(roomIndex, entityId) {
+    const rooms = [...(this._config.rooms || [])];
+    const room = { ...rooms[roomIndex] };
+    const summary_entities = [...(room.summary_entities || [])];
+    summary_entities.push({ entity: entityId });
+    room.summary_entities = summary_entities;
+    rooms[roomIndex] = room;
+    this._emit({ ...this._config, rooms });
+  }
+  _removeSummaryEntity(roomIndex, entityIndex) {
+    const rooms = [...(this._config.rooms || [])];
+    const room = { ...rooms[roomIndex] };
+    const summary_entities = (room.summary_entities || []).filter((_, i) => i !== entityIndex);
+    room.summary_entities = summary_entities.length ? summary_entities : undefined;
+    rooms[roomIndex] = room;
+    this._emit({ ...this._config, rooms });
+  }
+  _updateSummaryEntity(roomIndex, entityIndex, changes) {
+    const rooms = [...(this._config.rooms || [])];
+    const room = { ...rooms[roomIndex] };
+    const summary_entities = [...(room.summary_entities || [])];
+    const item = typeof summary_entities[entityIndex] === "string"
+      ? { entity: summary_entities[entityIndex] }
+      : { ...summary_entities[entityIndex] };
+    summary_entities[entityIndex] = { ...item, ...changes };
+    room.summary_entities = summary_entities;
+    rooms[roomIndex] = room;
+    this._emit({ ...this._config, rooms });
+  }
+  _selectedSummaryEntityRow(holder, item, roomIndex, entityIndex) {
+    const panel = document.createElement("ha-expansion-panel");
+    const nameText = item.entity ? entityName(this._hass, item.entity) : "";
+    panel.header = nameText || `Entità riepilogo ${entityIndex + 1}`;
+    panel.outlined = true;
+    panel.setAttribute("data-panel-id", `${roomIndex}-summary-${entityIndex}`);
+
+    const renderContent = () => {
+      const container = document.createElement("div");
+      container.className = "entity-editor-content";
+      
+      const main = document.createElement("div"); main.className = "entity-main";
+      const picker = document.createElement("ha-entity-picker");
+      picker.hass = this._hass; picker.value = item.entity; picker.allowCustomEntity = true;
+      this._handlePicker(picker, (value) => value ? this._updateSummaryEntity(roomIndex, entityIndex, { entity: value }) : this._removeSummaryEntity(roomIndex, entityIndex), true);
+      
+      const remove = document.createElement("ha-icon-button"); remove.label = "Rimuovi entità";
+      const removeIcon = document.createElement("ha-icon"); removeIcon.icon = "mdi:close"; remove.append(removeIcon);
+      remove.addEventListener("click", () => { this._removeSummaryEntity(roomIndex, entityIndex); this._render(); });
+      main.append(picker, remove); container.append(main);
+
+      const appearanceTitle = document.createElement("div"); appearanceTitle.className = "editor-section-title"; appearanceTitle.textContent = "Aspetto"; container.append(appearanceTitle);
+      
+      const name = document.createElement("ha-selector"); name.className = "full-width-field"; name.hass = this._hass; name.label = "Etichetta (opzionale)"; name.selector = { template: {} }; name.value = item.name || ""; this._handlePicker(name, (value) => this._updateSummaryEntity(roomIndex, entityIndex, { name: value || undefined }));
+      container.append(name);
+
+      const appearanceGrid = document.createElement("div"); appearanceGrid.className = "chip-options";
+      const icon = document.createElement("ha-icon-picker"); icon.hass = this._hass; icon.label = "Icona (opzionale)"; icon.value = item.icon || ""; this._handlePicker(icon, (value) => this._updateSummaryEntity(roomIndex, entityIndex, { icon: value || undefined }));
+      appearanceGrid.append(icon); container.append(appearanceGrid);
+
+      panel.append(container);
+    };
+
+    const state = this._saveState();
+    if (state.expandedPanels.has(panel.getAttribute("data-panel-id"))) {
+      panel.expanded = true;
+      renderContent();
+    } else {
+      panel.addEventListener("expanded-changed", (event) => {
+        if (event.detail.expanded && !panel.querySelector(".entity-editor-content")) {
+          renderContent();
+        }
+      }, { once: true });
+    }
+
+    const triggerRender = () => {
+      if (!panel.expanded && !panel.querySelector(".entity-editor-content")) {
+        renderContent();
+      }
+    };
+    panel.addEventListener("pointerdown", triggerRender);
+    panel.addEventListener("expanded-changed", (event) => {
+      const pId = panel.getAttribute("data-panel-id");
+      if (event.detail.expanded) {
+        this._expandedPanels.add(pId);
+      } else {
+        this._expandedPanels.delete(pId);
+      }
+    });
+
+    holder.append(panel);
   }
 }
 
