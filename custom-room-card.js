@@ -16,14 +16,326 @@ var number = (value, digits = 0) => {
   return Number.isFinite(n) ? n.toFixed(digits) : null;
 };
 var entityName = (hass, id) => hass.states[id]?.attributes?.friendly_name || id;
-var elapsed = (changed) => {
+var elapsed = (changed, hass) => {
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(changed || 0).getTime()) / 1e3));
   if (!Number.isFinite(seconds) || seconds > 31536e3) return "";
-  if (seconds < 60) return "ora";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} min fa`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} h fa`;
-  return `${Math.floor(seconds / 86400)} g fa`;
+  const lang = hass && hass.language ? hass.language.split("-")[0] : "en";
+  if (lang === "it") {
+    if (seconds < 60) return "ora";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} min fa`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} h fa`;
+    return `${Math.floor(seconds / 86400)} g fa`;
+  }
+  if (lang === "fr") {
+    if (seconds < 60) return "maintenant";
+    if (seconds < 3600) return `il y a ${Math.floor(seconds / 60)} min`;
+    if (seconds < 86400) return `il y a ${Math.floor(seconds / 3600)} h`;
+    return `il y a ${Math.floor(seconds / 86400)} j`;
+  }
+  if (lang === "es") {
+    if (seconds < 60) return "ahora";
+    if (seconds < 3600) return `hace ${Math.floor(seconds / 60)} min`;
+    if (seconds < 86400) return `hace ${Math.floor(seconds / 3600)} h`;
+    return `hace ${Math.floor(seconds / 86400)} d`;
+  }
+  if (lang === "de") {
+    if (seconds < 60) return "jetzt";
+    if (seconds < 3600) return `vor ${Math.floor(seconds / 60)} Min.`;
+    if (seconds < 86400) return `vor ${Math.floor(seconds / 3600)} Std.`;
+    return `vor ${Math.floor(seconds / 86400)} T.`;
+  }
+  if (seconds < 60) return "now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
 };
+var TRANSLATIONS = {
+  en: {
+    empty_card: "Add a room from the card configuration.",
+    good_morning: "Good morning",
+    good_afternoon: "Good afternoon",
+    good_evening: "Good evening",
+    good_night: "Good night",
+    default_user: "User",
+    not_available: "N/A",
+    card_type: "Card Type",
+    rooms: "Rooms",
+    weather: "Weather",
+    sort_by_motion: "Sort rooms by motion",
+    show_entity_icons: "Use real entity icons",
+    category_order: "Category ordering",
+    add_room: "Add room",
+    area: "Area",
+    custom_title: "Custom title",
+    base_color: "Base color",
+    icon_optional: "Icon (optional)",
+    motion_sensor: "Motion sensor",
+    opening_sensor: "Opening sensor",
+    temperature_sensor: "Temperature sensor",
+    humidity_sensor: "Humidity sensor",
+    illuminance_sensor: "Illuminance sensor",
+    tap_action: "Tap action",
+    hold_action: "Hold action",
+    lights: "Lights",
+    covers: "Covers",
+    climate: "Climate",
+    media: "Media",
+    switches: "Switches",
+    appearance: "Appearance",
+    label_optional: "Label (optional)",
+    active_icon: "Active icon",
+    visibility_conditions: "Visibility conditions",
+    room_visibility_conditions: "Room visibility conditions",
+    additional_summary_entities: "Additional summary entities",
+    add_entity: "Add entity",
+    add_chip: "Add chip",
+    remove_entity: "Remove entity",
+    sposta_alto: "Move up",
+    sposta_basso: "Move down",
+    rimuovi_stanza: "Remove room",
+    personalizza: "Customize",
+    no_entities: "No entities selected",
+    apparent_temp: "Apparent temperature",
+    weather_condition: "Weather condition (text)",
+    high_temp: "Max temperature",
+    low_temp: "Min temperature",
+    precip_probability: "Precipitation probability",
+    animated_icon: "Animated icon sensor",
+    sunset_sensor: "Sunset sensor",
+    room: "Room",
+    entities_by_category: "Entities by category",
+    actions: "Actions"
+  },
+  it: {
+    empty_card: "Aggiungi una stanza dalla configurazione della card.",
+    good_morning: "Buongiorno",
+    good_afternoon: "Buon pomeriggio",
+    good_evening: "Buonasera",
+    good_night: "Buonanotte",
+    default_user: "Utente",
+    not_available: "N/D",
+    card_type: "Tipologia Card",
+    rooms: "Stanze",
+    weather: "Meteo",
+    sort_by_motion: "Ordina le stanze per movimento",
+    show_entity_icons: "Usa icone reali delle entit\xE0",
+    category_order: "Ordinamento categorie",
+    add_room: "Aggiungi stanza",
+    area: "Area",
+    custom_title: "Titolo personalizzato",
+    base_color: "Colore base",
+    icon_optional: "Icona (opzionale)",
+    motion_sensor: "Sensore di movimento",
+    opening_sensor: "Sensore di apertura",
+    temperature_sensor: "Sensore di temperatura",
+    humidity_sensor: "Sensore di umidit\xE0",
+    illuminance_sensor: "Sensore di luminosit\xE0",
+    tap_action: "Azione tocco",
+    hold_action: "Pressione prolungata",
+    lights: "Luci",
+    covers: "Tapparelle",
+    climate: "Clima",
+    media: "Media",
+    switches: "Interruttori",
+    appearance: "Aspetto",
+    label_optional: "Etichetta (opzionale)",
+    active_icon: "Icona attiva",
+    visibility_conditions: "Condizioni di visibilit\xE0",
+    room_visibility_conditions: "Condizioni di visibilit\xE0 stanza",
+    additional_summary_entities: "Entit\xE0 riepilogo aggiuntive",
+    add_entity: "Aggiungi entit\xE0",
+    add_chip: "Aggiungi chip",
+    remove_entity: "Rimuovi entit\xE0",
+    sposta_alto: "Sposta in alto",
+    sposta_basso: "Sposta in basso",
+    rimuovi_stanza: "Rimuovi stanza",
+    personalizza: "Personalizza",
+    no_entities: "Nessuna entit\xE0 selezionata",
+    apparent_temp: "Temperatura apparente",
+    weather_condition: "Condizione tradotta",
+    high_temp: "Temperatura massima",
+    low_temp: "Temperatura minima",
+    precip_probability: "Probabilit\xE0 precipitazioni",
+    animated_icon: "Icona animata",
+    sunset_sensor: "Tramonto (sun.sun)",
+    room: "Stanza",
+    entities_by_category: "Entit\xE0 per categoria",
+    actions: "Azioni"
+  },
+  fr: {
+    empty_card: "Ajoutez une pi\xE8ce depuis la configuration de la carte.",
+    good_morning: "Bonjour",
+    good_afternoon: "Bon apr\xE8s-midi",
+    good_evening: "Bonsoir",
+    good_night: "Bonne nuit",
+    default_user: "Utilisateur",
+    not_available: "N/D",
+    card_type: "Type de Carte",
+    rooms: "Pi\xE8ces",
+    weather: "M\xE9t\xE9o",
+    sort_by_motion: "Trier les pi\xE8ces par mouvement",
+    show_entity_icons: "Utiliser de vraies ic\xF4nes d'entit\xE9s",
+    category_order: "Ordre des cat\xE9gories",
+    add_room: "Ajouter une pi\xE8ce",
+    area: "Zone",
+    custom_title: "Titre personnalis\xE9",
+    base_color: "Couleur de base",
+    icon_optional: "Ic\xF4ne (optionnel)",
+    motion_sensor: "D\xE9tecteur de mouvement",
+    opening_sensor: "Capteur d'ouverture",
+    temperature_sensor: "Capteur de temp\xE9rature",
+    humidity_sensor: "Capteur d'humidit\xE9",
+    illuminance_sensor: "Capteur de luminosit\xE9",
+    tap_action: "Action au tap",
+    hold_action: "Action au hold",
+    lights: "Lumi\xE8res",
+    covers: "Volets",
+    climate: "Climatisation",
+    media: "M\xE9dias",
+    switches: "Interrupteurs",
+    appearance: "Apparence",
+    label_optional: "\xC9tiquette (optionnel)",
+    active_icon: "Ic\xF4ne active",
+    visibility_conditions: "Conditions de visibilit\xE9",
+    room_visibility_conditions: "Conditions de visibilit\xE9 de la pi\xE8ce",
+    additional_summary_entities: "Entit\xE9s de r\xE9sum\xE9 suppl\xE9mentaires",
+    add_entity: "Ajouter une entit\xE9",
+    add_chip: "Ajouter un badge",
+    remove_entity: "Supprimer l'entit\xE9",
+    sposta_alto: "D\xE9placer vers le haut",
+    sposta_basso: "D\xE9placer vers le bas",
+    rimuovi_stanza: "Supprimer la pi\xE8ce",
+    personalizza: "Personnaliser",
+    no_entities: "Aucune entit\xE9 s\xE9lectionn\xE9e",
+    apparent_temp: "Temp\xE9rature ressentie",
+    weather_condition: "Condition m\xE9t\xE9o (texte)",
+    high_temp: "Temp\xE9rature maximale",
+    low_temp: "Temp\xE9rature minimale",
+    precip_probability: "Probabilit\xE9 de pr\xE9cipitations",
+    animated_icon: "Capteur d'ic\xF4ne anim\xE9e",
+    sunset_sensor: "Capteur de coucher du soleil",
+    room: "Pi\xE8ce",
+    entities_by_category: "Entit\xE9s par cat\xE9gorie",
+    actions: "Actions"
+  },
+  es: {
+    empty_card: "Agrega una habitaci\xF3n desde la configuraci\xF3n de la tarjeta.",
+    good_morning: "Buenos d\xEDas",
+    good_afternoon: "Buenas tardes",
+    good_evening: "Buenas noches",
+    good_night: "Buenas noches",
+    default_user: "Usuario",
+    not_available: "N/D",
+    card_type: "Tipo de Tarjeta",
+    rooms: "Habitaciones",
+    weather: "Meteorolog\xEDa",
+    sort_by_motion: "Ordenar habitaciones por movimiento",
+    show_entity_icons: "Usar iconos reales de entidades",
+    category_order: "Orden de categor\xEDas",
+    add_room: "Agregar habitaci\xF3n",
+    area: "Zona",
+    custom_title: "T\xEDtulo personalizado",
+    base_color: "Color base",
+    icon_optional: "Icono (opcional)",
+    motion_sensor: "Sensor de movimiento",
+    opening_sensor: "Sensor de apertura",
+    temperature_sensor: "Sensor de temperatura",
+    humidity_sensor: "Sensor de humedad",
+    illuminance_sensor: "Sensor de luminosidad",
+    tap_action: "Acci\xF3n de toque",
+    hold_action: "Acci\xF3n de pulsar y mantener",
+    lights: "Luces",
+    covers: "Persianas",
+    climate: "Clima",
+    media: "Medios",
+    switches: "Interruptores",
+    appearance: "Apariencia",
+    label_optional: "Etiqueta (opcional)",
+    active_icon: "Icono activo",
+    visibility_conditions: "Condiciones de visibilidad",
+    room_visibility_conditions: "Condiciones de visibilidad de la habitaci\xF3n",
+    additional_summary_entities: "Entidades de resumen adicionales",
+    add_entity: "Agregar entidad",
+    add_chip: "Agregar chip",
+    remove_entity: "Eliminar entidad",
+    sposta_alto: "Mover arriba",
+    sposta_basso: "Mover abajo",
+    rimuovi_stanza: "Eliminar habitaci\xF3n",
+    personalizza: "Personalizar",
+    no_entities: "No se seleccion\xF3 ninguna entidad",
+    apparent_temp: "Temperatura aparente",
+    weather_condition: "Condici\xF3n clim\xE1tica (texto)",
+    high_temp: "Temperatura m\xE1xima",
+    low_temp: "Temperatura m\xEDnima",
+    precip_probability: "Probabilidad de precipitaci\xF3n",
+    animated_icon: "Sensor de icono animado",
+    sunset_sensor: "Sensor de puesta de sol",
+    room: "Habitaci\xF3n",
+    entities_by_category: "Entidades por categor\xEDa",
+    actions: "Acciones"
+  },
+  de: {
+    empty_card: "F\xFCge einen Raum in der Kartenkonfiguration hinzu.",
+    good_morning: "Guten Morgen",
+    good_afternoon: "Guten Tag",
+    good_evening: "Guten Abend",
+    good_night: "Gute Nacht",
+    default_user: "Benutzer",
+    not_available: "N/A",
+    card_type: "Kartentyp",
+    rooms: "R\xE4ume",
+    weather: "Wetter",
+    sort_by_motion: "R\xE4ume nach Bewegung sortieren",
+    show_entity_icons: "Echte Entit\xE4tssymbole verwenden",
+    category_order: "Reihenfolge der Kategorien",
+    add_room: "Raum hinzuf\xFCgen",
+    area: "Bereich",
+    custom_title: "Benutzerdefinierter Titel",
+    base_color: "Basisfarbe",
+    icon_optional: "Symbol (optional)",
+    motion_sensor: "Bewegungsmelder",
+    opening_sensor: "\xD6ffnungssensor",
+    temperature_sensor: "Temperatursensor",
+    humidity_sensor: "Feuchtigkeitssensor",
+    illuminance_sensor: "Helligkeitssensor",
+    tap_action: "Tippen-Aktion",
+    hold_action: "Gedr\xFCckthalten-Aktion",
+    lights: "Lichter",
+    covers: "Rollos",
+    climate: "Klima",
+    media: "Medien",
+    switches: "Schalter",
+    appearance: "Aussehen",
+    label_optional: "Beschriftung (optional)",
+    active_icon: "Aktives Symbol",
+    visibility_conditions: "Sichtbarkeitsbedingungen",
+    room_visibility_conditions: "Sichtbarkeitsbedingungen f\xFCr den Raum",
+    additional_summary_entities: "Zus\xE4tzliche Zusammenfassungsentit\xE4ten",
+    add_entity: "Entit\xE4t hinzuf\xFCgen",
+    add_chip: "Chip hinzuf\xFCgen",
+    remove_entity: "Entit\xE4t entfernen",
+    sposta_alto: "Nach oben verschieben",
+    sposta_basso: "Nach unten verschieben",
+    rimuovi_stanza: "Raum entfernen",
+    personalizza: "Anpassen",
+    no_entities: "Keine Entit\xE4ten ausgew\xE4hlt",
+    apparent_temp: "Gef\xFChlte Temperatur",
+    weather_condition: "Wetterbedingung (Text)",
+    high_temp: "H\xF6chsttemperatur",
+    low_temp: "Tiefsttemperatur",
+    precip_probability: "Niederschlagswahrscheinlichkeit",
+    animated_icon: "Sensor f\xFCr animiertes Symbol",
+    sunset_sensor: "Sonnenuntergangs-Sensor",
+    room: "Raum",
+    entities_by_category: "Entit\xE4ten nach Kategorie",
+    actions: "Aktionen"
+  }
+};
+function localize(hass, key) {
+  const lang = hass && hass.language ? hass.language.split("-")[0] : "en";
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  return dict[key] || TRANSLATIONS.en[key] || key;
+}
 var CARD_STYLE = `
   :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;width:100%}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
 `;
@@ -1270,7 +1582,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       picker.allowCustomEntity = true;
       this._handlePicker(picker, (value) => value ? this._updateChip(roomIndex, category, entityIndex, { entity: value }) : this._removeChip(roomIndex, category, entityIndex), true);
       const remove = document.createElement("ha-icon-button");
-      remove.label = "Rimuovi entit\xE0";
+      remove.label = localize(this._hass, "remove_entity");
       const removeIcon = document.createElement("ha-icon");
       removeIcon.icon = "mdi:close";
       remove.append(removeIcon);
@@ -1282,12 +1594,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
       container.append(main);
       const appearanceTitle = document.createElement("div");
       appearanceTitle.className = "editor-section-title";
-      appearanceTitle.textContent = "Aspetto";
+      appearanceTitle.textContent = localize(this._hass, "appearance");
       container.append(appearanceTitle);
       const name = document.createElement("ha-selector");
       name.className = "full-width-field";
       name.hass = this._hass;
-      name.label = "Etichetta";
+      name.label = localize(this._hass, "label_optional");
       name.selector = { template: {} };
       name.value = chip.name || "";
       this._handlePicker(name, (value) => this._updateChip(roomIndex, category, entityIndex, { name: value || void 0 }));
@@ -1296,12 +1608,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
       appearanceGrid.className = "chip-options";
       const icon = document.createElement("ha-icon-picker");
       icon.hass = this._hass;
-      icon.label = "Icona";
+      icon.label = localize(this._hass, "icon_optional");
       icon.value = chip.icon || "";
       this._handlePicker(icon, (value) => this._updateChip(roomIndex, category, entityIndex, { icon: value || void 0 }));
       const activeIcon = document.createElement("ha-icon-picker");
       activeIcon.hass = this._hass;
-      activeIcon.label = "Icona attiva";
+      activeIcon.label = localize(this._hass, "active_icon");
       activeIcon.value = chip.active_icon || "";
       this._handlePicker(activeIcon, (value) => this._updateChip(roomIndex, category, entityIndex, { active_icon: value || void 0 }));
       const color = document.createElement("ha-selector");
@@ -1313,19 +1625,19 @@ var CustomRoomCardEditor = class extends HTMLElement {
       container.append(appearanceGrid);
       const actionsTitle = document.createElement("div");
       actionsTitle.className = "editor-section-title";
-      actionsTitle.textContent = "Azioni";
+      actionsTitle.textContent = localize(this._hass, "actions");
       container.append(actionsTitle);
       const actionsGrid = document.createElement("div");
       actionsGrid.className = "chip-options";
       const tapAction = document.createElement("ha-selector");
       tapAction.hass = this._hass;
-      tapAction.label = "Azione tocco";
+      tapAction.label = localize(this._hass, "tap_action");
       tapAction.selector = { ui_action: {} };
       tapAction.value = chip.tap_action || { action: "more-info" };
       this._handlePicker(tapAction, (value) => this._updateChip(roomIndex, category, entityIndex, { tap_action: value || void 0 }));
       const holdAction = document.createElement("ha-selector");
       holdAction.hass = this._hass;
-      holdAction.label = "Pressione prolungata";
+      holdAction.label = localize(this._hass, "hold_action");
       holdAction.selector = { ui_action: {} };
       holdAction.value = chip.hold_action || { action: "none" };
       this._handlePicker(holdAction, (value) => this._updateChip(roomIndex, category, entityIndex, { hold_action: value || void 0 }));
@@ -1334,7 +1646,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const details = document.createElement("details");
       details.setAttribute("data-details-id", `${roomIndex}-${category}-${entityIndex}`);
       const summary = document.createElement("summary");
-      summary.textContent = "Condizioni di visibilit\xE0";
+      summary.textContent = localize(this._hass, "visibility_conditions");
       details.append(summary);
       const visibility = sanitizeVisibilityConditions(chip.visibility || (chip.condition_entity ? [
         chip.condition_invert ? {
@@ -1470,13 +1782,13 @@ var CustomRoomCardEditor = class extends HTMLElement {
     container.className = "weather-editor-container";
     container.innerHTML = `
       <div class="fields">
-        <div class="field"><ha-entity-picker data-temp label="Temperatura apparente"></ha-entity-picker></div>
-        <div class="field"><ha-entity-picker data-cond label="Condizione tradotta"></ha-entity-picker></div>
-        <div class="field"><ha-entity-picker data-high label="Temperatura massima"></ha-entity-picker></div>
-        <div class="field"><ha-entity-picker data-low label="Temperatura minima"></ha-entity-picker></div>
-        <div class="field"><ha-entity-picker data-precip label="Probabilit\xE0 precipitazioni"></ha-entity-picker></div>
-        <div class="field"><ha-entity-picker data-icon label="Icona animata"></ha-entity-picker></div>
-        <div class="field"><ha-entity-picker data-sunset label="Tramonto (sun.sun)"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-temp label="${localize(this._hass, "apparent_temp")}"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-cond label="${localize(this._hass, "weather_condition")}"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-high label="${localize(this._hass, "high_temp")}"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-low label="${localize(this._hass, "low_temp")}"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-precip label="${localize(this._hass, "precip_probability")}"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-icon label="${localize(this._hass, "animated_icon")}"></ha-entity-picker></div>
+        <div class="field"><ha-entity-picker data-sunset label="${localize(this._hass, "sunset_sensor")}"></ha-entity-picker></div>
         <div class="field" data-color></div>
         <div class="field" data-tap-action></div>
         <div class="field" data-hold-action></div>
@@ -1518,7 +1830,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     const colorHolder = container.querySelector("[data-color]");
     const color = document.createElement("ha-selector");
     color.hass = this._hass;
-    color.label = "Colore base";
+    color.label = localize(this._hass, "base_color");
     color.selector = { ui_color: {} };
     color.value = this._config.color || "#1a365d";
     this._handlePicker(color, (value) => this._emit({ ...this._config, color: value }));
@@ -1526,7 +1838,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     const tapActionHolder = container.querySelector("[data-tap-action]");
     const tapAction = document.createElement("ha-selector");
     tapAction.hass = this._hass;
-    tapAction.label = "Azione tocco";
+    tapAction.label = localize(this._hass, "tap_action");
     tapAction.selector = { ui_action: {} };
     tapAction.value = this._config.tap_action || { action: "navigate", navigation_path: "#meteo" };
     this._handlePicker(tapAction, (value) => this._emit({ ...this._config, tap_action: value || void 0 }));
@@ -1534,7 +1846,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     const holdActionHolder = container.querySelector("[data-hold-action]");
     const holdAction = document.createElement("ha-selector");
     holdAction.hass = this._hass;
-    holdAction.label = "Pressione prolungata";
+    holdAction.label = localize(this._hass, "hold_action");
     holdAction.selector = { ui_action: {} };
     holdAction.value = this._config.hold_action || { action: "none" };
     this._handlePicker(holdAction, (value) => this._emit({ ...this._config, hold_action: value || void 0 }));
@@ -1544,7 +1856,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     chips.forEach((chip, index) => {
       this._selectedEntityRow(chipsList, chip, null, 0, "weather", index);
     });
-    this._addEntityPicker(chipsList, "Aggiungi chip", null, (value) => this._addChip(0, "weather", value));
+    this._addEntityPicker(chipsList, localize(this._hass, "add_chip"), null, (value) => this._addChip(0, "weather", value));
   }
   _roomEditor(parent, room, index) {
     const panel = document.createElement("ha-expansion-panel");
@@ -1560,23 +1872,23 @@ var CustomRoomCardEditor = class extends HTMLElement {
     roomIcon.style.setProperty("--mdc-icon-size", "20px");
     roomIcon.style.color = "var(--secondary-text-color)";
     const textSpan = document.createElement("span");
-    textSpan.textContent = room.title || roomArea?.name || `Stanza ${index + 1}`;
+    textSpan.textContent = room.title || roomArea?.name || `${localize(this._hass, "room")} ${index + 1}`;
     headerSpan.append(roomIcon, textSpan);
     panel.append(headerSpan);
     const renderRoomContent = () => {
       const container = document.createElement("section");
       container.className = "room-editor";
-      container.innerHTML = `<div class="fields"><div class="field"><ha-area-picker data-area label="Area"></ha-area-picker></div><div class="field full-width" data-title></div><div class="field" data-color></div><div class="field"><ha-icon-picker data-icon label="Icona (opzionale)"></ha-icon-picker></div><div class="field"><ha-entity-picker data-motion label="Sensore di movimento"></ha-entity-picker></div><div class="field"><ha-entity-picker data-opening label="Sensore di apertura"></ha-entity-picker></div><div class="field"><ha-entity-picker data-temperature label="Sensore di temperatura"></ha-entity-picker></div><div class="field"><ha-entity-picker data-humidity label="Sensore di umidit\xE0"></ha-entity-picker></div><div class="field"><ha-entity-picker data-illuminance label="Sensore di luminosit\xE0"></ha-entity-picker></div><div class="field" data-tap-action></div><div class="field" data-hold-action></div></div><div class="entities"><h4>Entit\xE0 per categoria</h4></div><div class="room-actions"><ha-icon-button data-up label="Sposta stanza in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="Sposta stanza in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="Rimuovi stanza"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
+      container.innerHTML = `<div class="fields"><div class="field"><ha-area-picker data-area label="${localize(this._hass, "area")}"></ha-area-picker></div><div class="field full-width" data-title></div><div class="field" data-color></div><div class="field"><ha-icon-picker data-icon label="${localize(this._hass, "icon_optional")}"></ha-icon-picker></div><div class="field"><ha-entity-picker data-motion label="${localize(this._hass, "motion_sensor")}"></ha-entity-picker></div><div class="field"><ha-entity-picker data-opening label="${localize(this._hass, "opening_sensor")}"></ha-entity-picker></div><div class="field"><ha-entity-picker data-temperature label="${localize(this._hass, "temperature_sensor")}"></ha-entity-picker></div><div class="field"><ha-entity-picker data-humidity label="${localize(this._hass, "humidity_sensor")}"></ha-entity-picker></div><div class="field"><ha-entity-picker data-illuminance label="${localize(this._hass, "illuminance_sensor")}"></ha-entity-picker></div><div class="field" data-tap-action></div><div class="field" data-hold-action></div></div><div class="entities"><h4>${localize(this._hass, "entities_by_category")}</h4></div><div class="room-actions"><ha-icon-button data-up label="${localize(this._hass, "sposta_alto")}"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down label="${localize(this._hass, "sposta_basso")}"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button><ha-icon-button data-remove label="${localize(this._hass, "rimuovi_stanza")}"><ha-icon icon="mdi:delete"></ha-icon></ha-icon-button></div>`;
       panel.append(container);
       const area = container.querySelector("[data-area]");
       area.hass = this._hass;
-      area.label = "Area";
+      area.label = localize(this._hass, "area");
       area.value = room.area || "";
       this._handlePicker(area, (value) => this._updateRoom(index, { area: value || void 0 }), true);
       const titleHolder = container.querySelector("[data-title]");
       const titleSelector = document.createElement("ha-selector");
       titleSelector.hass = this._hass;
-      titleSelector.label = "Titolo personalizzato";
+      titleSelector.label = localize(this._hass, "custom_title");
       titleSelector.selector = { template: {} };
       titleSelector.value = room.title || "";
       this._handlePicker(titleSelector, (value) => this._updateRoom(index, { title: value || void 0 }));
@@ -1584,7 +1896,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const colorHolder = container.querySelector("[data-color]");
       const color = document.createElement("ha-selector");
       color.hass = this._hass;
-      color.label = "Colore base";
+      color.label = localize(this._hass, "base_color");
       color.selector = { ui_color: {} };
       color.value = room.color || defaultColor(this._hass.areas?.[room.area]?.name);
       this._handlePicker(color, (value) => this._updateRoom(index, { color: value }));
@@ -1631,7 +1943,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const tapActionHolder = container.querySelector("[data-tap-action]");
       const tapAction = document.createElement("ha-selector");
       tapAction.hass = this._hass;
-      tapAction.label = "Azione tocco";
+      tapAction.label = localize(this._hass, "tap_action");
       tapAction.selector = { ui_action: {} };
       tapAction.value = room.tap_action || { action: "more-info" };
       this._handlePicker(tapAction, (value) => this._updateRoom(index, { tap_action: value || void 0 }));
@@ -1639,7 +1951,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       const holdActionHolder = container.querySelector("[data-hold-action]");
       const holdAction = document.createElement("ha-selector");
       holdAction.hass = this._hass;
-      holdAction.label = "Pressione prolungata";
+      holdAction.label = localize(this._hass, "hold_action");
       holdAction.selector = { ui_action: {} };
       holdAction.value = room.hold_action || { action: "none" };
       this._handlePicker(holdAction, (value) => this._updateRoom(index, { hold_action: value || void 0 }));
@@ -1650,7 +1962,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       summarySec.style.flexDirection = "column";
       summarySec.style.gap = "12px";
       summarySec.style.marginBottom = "16px";
-      summarySec.innerHTML = `<div class="editor-section-title" style="margin-top: 0;">Entit\xE0 riepilogo aggiuntive</div>`;
+      summarySec.innerHTML = `<div class="editor-section-title" style="margin-top: 0;">${localize(this._hass, "additional_summary_entities")}</div>`;
       const entitiesPicker = document.createElement("ha-entities-picker");
       entitiesPicker.hass = this._hass;
       const rawSummary = room.summary_entities || [];
@@ -1680,19 +1992,19 @@ var CustomRoomCardEditor = class extends HTMLElement {
         if (!meta) return;
         const category = document.createElement("section");
         category.className = "category";
-        category.innerHTML = `<div class="category-header"><ha-icon icon="${meta.icon}"></ha-icon><span class="category-title">${meta.label}</span></div>`;
+        category.innerHTML = `<div class="category-header"><ha-icon icon="${meta.icon}"></ha-icon><span class="category-title">${localize(this._hass, key)}</span></div>`;
         container.querySelector(".entities").append(category);
         const domains = meta.domains || [meta.domain];
         const rawSelected = room.entities?.[key];
         const selectedArray = Array.isArray(rawSelected) ? rawSelected : rawSelected ? [rawSelected] : [];
         const selected = selectedArray.map((item) => typeof item === "string" ? { entity: item } : item).filter((item) => item?.entity);
         selected.forEach((chip, entityIndex) => this._selectedEntityRow(category, chip, domains, index, key, entityIndex));
-        this._addEntityPicker(category, `Aggiungi ${meta.label.toLowerCase()}`, domains, (value) => this._addChip(index, key, value));
+        this._addEntityPicker(category, `${localize(this._hass, "add_entity")} ${localize(this._hass, key)}`, domains, (value) => this._addChip(index, key, value));
       });
       const details = document.createElement("details");
       details.setAttribute("data-details-id", `room-${index}-visibility`);
       const summary = document.createElement("summary");
-      summary.textContent = "Condizioni di visibilit\xE0 stanza";
+      summary.textContent = localize(this._hass, "room_visibility_conditions");
       details.append(summary);
       const visibility = sanitizeVisibilityConditions(room.visibility || (room.condition_entity ? [
         room.condition_invert ? {
