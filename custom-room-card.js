@@ -377,12 +377,18 @@ var EDITOR_STYLE = `
   :host {
     display: block;
     container-type: inline-size;
+    color: var(--primary-text-color);
+    font-family: var(--paper-font-common-base_-_font-family, inherit);
   }
   .editor {
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 16px;
+    background: var(--card-background-color);
+    border-radius: var(--ha-card-border-radius, 12px);
+    border: 1px solid var(--divider-color);
+    color: var(--primary-text-color);
     font-family: var(--paper-font-body1_-_font-family, inherit);
   }
   .controls {

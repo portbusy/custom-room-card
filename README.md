@@ -16,16 +16,16 @@ No external dependencies (such as `button-card`, `mushroom`, `card-mod`, or `sta
 
 ## Key Features
 
-* **Visual Editor**: Configure rooms, entities, colors, category ordering, and visibility conditions directly in the UI.
-* **Theme Integration**: Uses native Home Assistant CSS custom properties (`--ha-card-background`, `--secondary-background-color`, etc.) to match active dashboards.
-* **Localization**: Translates UI labels and greetings based on user profile settings. Supports English (`en`), Italian (`it`), French (`fr`), Spanish (`es`), and German (`de`).
-* **Header Summary**: Displays room presence (motion), door/window state, temperature, humidity, and light level (lux) in the header.
-* **Motion Sorting**: Moves rooms with active presence to the top of the card automatically.
-* **Activity Tracking**: Shows time elapsed since motion was last detected (e.g., "now", "10m ago").
-* **Quick Control Chips**: Quick-action chips grouped by category (lights, covers, climate, media, switches). Tapping toggles light/switch entities or opens details dialogs. For `input_select` and `select` entities, you can enable a native dropdown menu directly from the chip without opening dialogs.
-* **Conditional Visibility**: Integrates with the native Home Assistant visibility editor (`ha-card-conditions-editor`) to hide or show rooms and individual chips.
-* **Template Support**: Supports Home Assistant templates (e.g., `{{ states('sensor.label') }}`) for custom labels and entity names.
-* **Weather Banner**: Optional animated weather banner at the top of the card.
+* ⚡ **Visual Editor**: Configure rooms, entities, colors, category ordering, and visibility conditions directly in the UI.
+* 🎨 **Theme Integration**: Uses native Home Assistant CSS custom properties (`--ha-card-background`, `--secondary-background-color`, etc.) to match active dashboards.
+* 🌐 **Localization**: Translates UI labels and greetings based on user profile settings. Supports English (`en`), Italian (`it`), French (`fr`), Spanish (`es`), and German (`de`).
+* 🌡️ **Header Summary**: Displays room presence (motion), door/window state, temperature, humidity, and light level (lux) in the header.
+* 🏃 **Motion Sorting**: Moves rooms with active presence to the top of the card automatically.
+* ⏱️ **Activity Tracking**: Shows time elapsed since motion was last detected (e.g., "now", "10m ago").
+* 🎛️ **Quick Control Chips**: Quick-action chips grouped by category (lights, covers, climate, media, switches). Tapping toggles light/switch entities or opens details dialogs. For `input_select` and `select` entities, you can enable a native dropdown menu directly from the chip without opening dialogs.
+* 👁️ **Conditional Visibility**: Integrates with the native Home Assistant visibility editor (`ha-card-conditions-editor`) to hide or show rooms and individual chips.
+* 📝 **Template Support**: Supports Home Assistant templates (e.g., `{{ states('sensor.label') }}`) for custom labels and entity names.
+* 🌦️ **Weather Banner**: Optional animated weather banner at the top of the card.
 
 ---
 
