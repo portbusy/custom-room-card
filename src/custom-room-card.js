@@ -171,6 +171,86 @@ function sanitizeVisibilityConditions(conditions) {
   });
 }
 
+function bindActionHandler(element, getActionConfig, onEditorSelect, stopClickPropagation = false) {
+  let timer = null;
+  let hasHeld = false;
+  let startX = 0;
+  let startY = 0;
+
+  const start = (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target && event.target.closest) {
+      if (event.target.closest(".status-icon") || event.target.closest(".status-metric")) {
+        return;
+      }
+    }
+    hasHeld = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    timer = setTimeout(() => {
+      hasHeld = true;
+      triggerAction("hold");
+    }, 500);
+  };
+
+  const end = () => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  };
+
+  const move = (event) => {
+    if (!timer) return;
+    const diffX = Math.abs(event.clientX - startX);
+    const diffY = Math.abs(event.clientY - startY);
+    if (diffX > 10 || diffY > 10) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  };
+
+  const triggerAction = (action) => {
+    if (document.querySelector("custom-room-card-editor")) {
+      if (action === "tap" && onEditorSelect) {
+        onEditorSelect();
+      }
+      return;
+    }
+    const config = getActionConfig();
+    const actionEvent = new CustomEvent("hass-action", {
+      bubbles: true,
+      composed: true,
+      detail: { config, action }
+    });
+    element.dispatchEvent(actionEvent);
+  };
+
+  element.addEventListener("pointerdown", start);
+  element.addEventListener("pointerup", end);
+  element.addEventListener("pointermove", move);
+  element.addEventListener("pointercancel", end);
+
+  element.addEventListener("click", (event) => {
+    if (stopClickPropagation) {
+      event.stopPropagation();
+    }
+    if (hasHeld) {
+      event.preventDefault();
+      event.stopPropagation();
+      hasHeld = false;
+      return;
+    }
+    triggerAction("tap");
+  });
+
+  element.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    if (document.querySelector("custom-room-card-editor")) return;
+    triggerAction("hold");
+  });
+}
+
 
 class CustomRoomCard extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: "open" }); this._clock = null; this._templateSubs = {}; this._renderedTemplates = {}; this._monitoredEntities = []; this._oldBodyHTML = ""; }
@@ -558,40 +638,17 @@ class CustomRoomCard extends HTMLElement {
             hold_action: room.hold_action || { action: "none" }
           };
         };
-        button.addEventListener("click", () => {
-          if (document.querySelector("custom-room-card-editor")) {
+        bindActionHandler(
+          button,
+          getActionConfig,
+          () => {
             window.dispatchEvent(new CustomEvent("custom-room-card-select", {
               bubbles: true,
               composed: true,
               detail: { roomIndex, type: "room" }
             }));
-            return;
           }
-          const actionConfig = getActionConfig();
-          const actionEvent = new CustomEvent("hass-action", {
-            bubbles: true,
-            composed: true,
-            detail: {
-              config: actionConfig,
-              action: "tap"
-            }
-          });
-          button.dispatchEvent(actionEvent);
-        });
-        button.addEventListener("contextmenu", (event) => {
-          event.preventDefault();
-          if (document.querySelector("custom-room-card-editor")) return;
-          const actionConfig = getActionConfig();
-          const actionEvent = new CustomEvent("hass-action", {
-            bubbles: true,
-            composed: true,
-            detail: {
-              config: actionConfig,
-              action: "hold"
-            }
-          });
-          button.dispatchEvent(actionEvent);
-        });
+        );
       });
       this.shadowRoot.querySelectorAll(".status-icon, .status-metric").forEach((element) => {
         element.addEventListener("click", (event) => {
@@ -608,40 +665,17 @@ class CustomRoomCard extends HTMLElement {
             hold_action: this._config.hold_action || { action: "none" }
           };
         };
-        button.addEventListener("click", () => {
-          if (document.querySelector("custom-room-card-editor")) {
+        bindActionHandler(
+          button,
+          getActionConfig,
+          () => {
             window.dispatchEvent(new CustomEvent("custom-room-card-select", {
               bubbles: true,
               composed: true,
               detail: { roomIndex: 0, type: "room" }
             }));
-            return;
           }
-          const actionConfig = getActionConfig();
-          const actionEvent = new CustomEvent("hass-action", {
-            bubbles: true,
-            composed: true,
-            detail: {
-              config: actionConfig,
-              action: "tap"
-            }
-          });
-          button.dispatchEvent(actionEvent);
-        });
-        button.addEventListener("contextmenu", (event) => {
-          event.preventDefault();
-          if (document.querySelector("custom-room-card-editor")) return;
-          const actionConfig = getActionConfig();
-          const actionEvent = new CustomEvent("hass-action", {
-            bubbles: true,
-            composed: true,
-            detail: {
-              config: actionConfig,
-              action: "hold"
-            }
-          });
-          button.dispatchEvent(actionEvent);
-        });
+        );
       });
     }
     
@@ -669,9 +703,10 @@ class CustomRoomCard extends HTMLElement {
         };
       };
       
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (document.querySelector("custom-room-card-editor")) {
+      bindActionHandler(
+        button,
+        getActionConfig,
+        () => {
           window.dispatchEvent(new CustomEvent("custom-room-card-select", {
             bubbles: true,
             composed: true,
@@ -682,34 +717,9 @@ class CustomRoomCard extends HTMLElement {
               type: "chip"
             }
           }));
-          return;
-        }
-        const actionConfig = getActionConfig();
-        const actionEvent = new CustomEvent("hass-action", {
-          bubbles: true,
-          composed: true,
-          detail: {
-            config: actionConfig,
-            action: "tap"
-          }
-        });
-        button.dispatchEvent(actionEvent);
-      });
-      
-      button.addEventListener("contextmenu", (event) => {
-        event.preventDefault();
-        if (document.querySelector("custom-room-card-editor")) return;
-        const actionConfig = getActionConfig();
-        const actionEvent = new CustomEvent("hass-action", {
-          bubbles: true,
-          composed: true,
-          detail: {
-            config: actionConfig,
-            action: "hold"
-          }
-        });
-        button.dispatchEvent(actionEvent);
-      });
+        },
+        true // stopClickPropagation
+      );
     });
   }
   _room(room, ids, roomIndex) {
