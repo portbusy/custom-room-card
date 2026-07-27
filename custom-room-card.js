@@ -1251,26 +1251,27 @@ var CustomRoomCard = class extends HTMLElement {
     });
   }
   _weather() {
+    const notAvailable = localize(this._hass, "not_available");
     const tempEntityObj = this._hass.states[this._config.temp_entity];
-    const temp = tempEntityObj ? parseFloat(tempEntityObj.state).toFixed(1) : "N/D";
+    const temp = tempEntityObj ? parseFloat(tempEntityObj.state).toFixed(1) : notAvailable;
     const condEntityObj = this._hass.states[this._config.condition_entity];
-    const cond = condEntityObj ? condEntityObj.state : "N/D";
+    const cond = condEntityObj ? condEntityObj.state : notAvailable;
     const highEntityObj = this._hass.states[this._config.high_temp_entity];
-    const high = highEntityObj ? Math.round(parseFloat(highEntityObj.state)) : "N/D";
+    const high = highEntityObj ? Math.round(parseFloat(highEntityObj.state)) : notAvailable;
     const lowEntityObj = this._hass.states[this._config.low_temp_entity];
-    const low = lowEntityObj ? Math.round(parseFloat(lowEntityObj.state)) : "N/D";
+    const low = lowEntityObj ? Math.round(parseFloat(lowEntityObj.state)) : notAvailable;
     const precipEntityObj = this._hass.states[this._config.precip_probability_entity];
     const precip = precipEntityObj ? precipEntityObj.state : "0";
     const iconEntityObj = this._hass.states[this._config.weather_icon_entity];
     const iconPath = iconEntityObj ? iconEntityObj.state.trim() : "";
-    let sunset = "N/D";
+    let sunset = notAvailable;
     const sunEntityObj = this._hass.states[this._config.sunset_entity || "sun.sun"];
     if (sunEntityObj && sunEntityObj.attributes.next_setting) {
-      sunset = new Date(sunEntityObj.attributes.next_setting).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      sunset = new Date(sunEntityObj.attributes.next_setting).toLocaleTimeString(this._hass.language || "it-IT", { hour: "2-digit", minute: "2-digit" });
     }
     const hour = (/* @__PURE__ */ new Date()).getHours();
-    const greeting = hour < 12 ? "Buongiorno" : hour < 18 ? "Buonasera" : "Buonanotte";
-    const name = this._hass.user ? this._hass.user.name : "Utente";
+    const greeting = localize(this._hass, hour < 12 ? "good_morning" : hour < 18 ? "good_evening" : "good_night");
+    const name = this._hass.user ? this._hass.user.name : localize(this._hass, "default_user");
     const precipColor = parseInt(precip) > 0 ? "#5b9bd5" : "rgba(255,255,255,0.35)";
     const umbrellaIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" style="vertical-align:middle;margin-right:4px;flex-shrink:0;"><path fill="${precipColor}" d="M12,2A10,10 0 0,1 22,12H13A1,1 0 0,0 12,13A1,1 0 0,1 10,14A1,1 0 0,0 8,13H2A10,10 0 0,1 12,2M9,17A1,1 0 0,1 10,18A2,2 0 0,0 14,18V13H12A3,3 0 0,1 9,16V17Z"/></svg>`;
     const chipsData = (this._config.chips || []).map((item, chipIndex) => {
@@ -1280,7 +1281,7 @@ var CustomRoomCard = class extends HTMLElement {
     const color = this._config.color || "#1a365d";
     return `
       <section class="room weather-room" style="--room-color:${escape(color)}">
-        <button class="header weather-header" aria-label="Meteo Detail">
+        <button class="header weather-header" aria-label="${escape(localize(this._hass, "weather"))}">
           <div class="weather-greeting">${greeting}, ${name}</div>
           <div class="weather-grid">
             <div class="weather-col-left">
@@ -1318,7 +1319,7 @@ var CustomRoomCard = class extends HTMLElement {
     let newHTML;
     if (cardType === "rooms") {
       const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })).filter(({ room }) => this._showRoom(room)));
-      newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
+      newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">${escape(localize(this._hass, "empty_card"))}</div>`}</div>`;
     } else {
       newHTML = this._weather();
     }
@@ -1473,9 +1474,9 @@ var CustomRoomCard = class extends HTMLElement {
     const chips = this._chips(room, roomIndex);
     const isPresenceActive = motion ? on(motion) : true;
     const color = isPresenceActive ? room.color || defaultColor(title) : "#808080";
-    const lastMotion = motion ? elapsed(motion.last_changed) : "";
+    const lastMotion = motion ? elapsed(motion.last_changed, this._hass) : "";
     const fallbackEntity = room.motion_entity || ids.find((id) => this._hass.states[id]) || "";
-    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-room-index="${roomIndex}" data-entity="${escape(fallbackEntity)}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}${lastMotion ? `<span class="motion-time">${lastMotion}</span>` : ""}</span><span class="summary">${status}${metrics}</span></button>${chips.length ? `<div class="chips">${chips.map((chip) => this._chip(chip)).join("")}</div>` : `<div class="empty">Nessuna entit\xE0 selezionata</div>`}</section>`;
+    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-room-index="${roomIndex}" data-entity="${escape(fallbackEntity)}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}${lastMotion ? `<span class="motion-time">${lastMotion}</span>` : ""}</span><span class="summary">${status}${metrics}</span></button>${chips.length ? `<div class="chips">${chips.map((chip) => this._chip(chip)).join("")}</div>` : `<div class="empty">${escape(localize(this._hass, "no_entities"))}</div>`}</section>`;
   }
   _chip(chip) {
     const id = chip.entity;
@@ -1933,7 +1934,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
           if (!meta) return;
           const row = document.createElement("div");
           row.className = "category-order-row";
-          row.innerHTML = `<div class="category-order-info"><ha-icon icon="${meta.icon}"></ha-icon><span>${meta.label}</span></div><div class="category-order-actions"><ha-icon-button data-up="${idx}" label="Sposta in alto"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down="${idx}" label="Sposta in basso"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button></div>`;
+          row.innerHTML = `<div class="category-order-info"><ha-icon icon="${meta.icon}"></ha-icon><span>${escape(localize(this._hass, key))}</span></div><div class="category-order-actions"><ha-icon-button data-up="${idx}" label="${escape(localize(this._hass, "sposta_alto"))}"><ha-icon icon="mdi:arrow-up"></ha-icon></ha-icon-button><ha-icon-button data-down="${idx}" label="${escape(localize(this._hass, "sposta_basso"))}"><ha-icon icon="mdi:arrow-down"></ha-icon></ha-icon-button></div>`;
           const upBtn = row.querySelector("[data-up]");
           const downBtn = row.querySelector("[data-down]");
           upBtn.disabled = idx === 0;
@@ -2258,7 +2259,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
   _selectedSummaryEntityRow(holder, item, roomIndex, entityIndex) {
     const panel = document.createElement("ha-expansion-panel");
     const nameText = item.entity ? entityName(this._hass, item.entity) : "";
-    panel.header = `${nameText || item.entity} (Personalizza)`;
+    panel.header = `${nameText || item.entity} (${localize(this._hass, "personalizza")})`;
     panel.outlined = true;
     panel.setAttribute("data-panel-id", `${roomIndex}-summary-${entityIndex}`);
     const renderContent = () => {
@@ -2266,12 +2267,12 @@ var CustomRoomCardEditor = class extends HTMLElement {
       container.className = "entity-editor-content";
       const appearanceTitle = document.createElement("div");
       appearanceTitle.className = "editor-section-title";
-      appearanceTitle.textContent = "Aspetto";
+      appearanceTitle.textContent = localize(this._hass, "appearance");
       container.append(appearanceTitle);
       const name = document.createElement("ha-selector");
       name.className = "full-width-field";
       name.hass = this._hass;
-      name.label = "Etichetta (opzionale)";
+      name.label = localize(this._hass, "label_optional");
       name.selector = { template: {} };
       name.value = item.name || "";
       this._handlePicker(name, (value) => this._updateSummaryEntity(roomIndex, entityIndex, { name: value || void 0 }));
@@ -2280,7 +2281,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
       appearanceGrid.className = "chip-options";
       const icon = document.createElement("ha-icon-picker");
       icon.hass = this._hass;
-      icon.label = "Icona (opzionale)";
+      icon.label = localize(this._hass, "icon_optional");
       icon.value = item.icon || "";
       this._handlePicker(icon, (value) => this._updateSummaryEntity(roomIndex, entityIndex, { icon: value || void 0 }));
       appearanceGrid.append(icon);
