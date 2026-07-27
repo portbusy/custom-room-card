@@ -9,7 +9,18 @@ var CATEGORIES = {
   switches: { domain: "switch", domains: ["switch", "input_boolean"], label: "Interruttori", icon: "mdi:toggle-switch", off: "mdi:toggle-switch-off-outline" }
 };
 var OFF = /* @__PURE__ */ new Set(["off", "closed", "idle", "standby", "unavailable", "unknown"]);
-var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var DOMAIN_CATEGORY = {};
+Object.values(CATEGORIES).forEach((meta) => {
+  if (!(meta.domain in DOMAIN_CATEGORY)) DOMAIN_CATEGORY[meta.domain] = meta;
+});
+var ESCAPE_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+var ESCAPE_RE = /[&<>"']/g;
+var escapeChar = (c) => ESCAPE_MAP[c];
+var escape = (value) => String(value ?? "").replace(ESCAPE_RE, escapeChar);
+var domainOf = (entityId) => {
+  const i = entityId.indexOf(".");
+  return i === -1 ? entityId : entityId.slice(0, i);
+};
 var on = (state) => state && !OFF.has(state.state);
 var number = (value, digits = 0) => {
   const n = Number.parseFloat(value);
@@ -639,6 +650,27 @@ var EDITOR_STYLE = `
     }
   }
 `;
+var sharedSheets = /* @__PURE__ */ new Map();
+function adoptStyle(shadowRoot, css) {
+  let sheet = sharedSheets.get(css);
+  if (sheet === void 0) {
+    sheet = null;
+    if (typeof CSSStyleSheet === "function" && "adoptedStyleSheets" in ShadowRoot.prototype) {
+      try {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(css);
+      } catch (e) {
+        sheet = null;
+      }
+    }
+    sharedSheets.set(css, sheet);
+  }
+  if (!sheet) return `<style>${css}</style>`;
+  if (!shadowRoot.adoptedStyleSheets.includes(sheet)) {
+    shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, sheet];
+  }
+  return "";
+}
 function formatState(stateObj, suffix, digits = null) {
   if (!stateObj) return "";
   const state = stateObj.state;
@@ -678,20 +710,31 @@ function defaultColor(name = "") {
   if (/studio|office/.test(n)) return "#7c8fa9";
   return "#a66d58";
 }
-function checkConditionsMet(hass, conditions) {
+function findUserPerson(hass) {
+  if (!hass || !hass.user) return null;
+  const userId = hass.user.id;
+  const states = hass.states;
+  for (const id in states) {
+    if (id.charCodeAt(0) === 112 && id.startsWith("person.") && states[id].attributes.user_id === userId) {
+      return id;
+    }
+  }
+  return null;
+}
+function checkConditionsMet(hass, conditions, userPersonId) {
   if (!conditions || !Array.isArray(conditions) || conditions.length === 0) return true;
   return conditions.every((cond) => {
     if (!cond || !cond.condition) return true;
     if (cond.condition === "and") {
-      return checkConditionsMet(hass, cond.conditions);
+      return checkConditionsMet(hass, cond.conditions, userPersonId);
     }
     if (cond.condition === "or") {
       const subConds = cond.conditions;
       if (!subConds || !Array.isArray(subConds) || subConds.length === 0) return true;
-      return subConds.some((subCond) => checkConditionsMet(hass, [subCond]));
+      return subConds.some((subCond) => checkConditionsMet(hass, [subCond], userPersonId));
     }
     if (cond.condition === "not") {
-      return !checkConditionsMet(hass, Array.isArray(cond.conditions) ? cond.conditions : [cond.conditions]);
+      return !checkConditionsMet(hass, Array.isArray(cond.conditions) ? cond.conditions : [cond.conditions], userPersonId);
     }
     if (cond.condition === "state") {
       const entityId = cond.entity_id || cond.entity;
@@ -738,9 +781,8 @@ function checkConditionsMet(hass, conditions) {
       if (targetEntityId) {
         stateObj = hass.states[targetEntityId];
       } else if (hass.user) {
-        stateObj = Object.values(hass.states).find(
-          (s) => s.entity_id.startsWith("person.") && s.attributes.user_id === hass.user.id
-        );
+        const personId = userPersonId !== void 0 ? userPersonId : findUserPerson(hass);
+        stateObj = personId ? hass.states[personId] : null;
       }
       if (!stateObj) return false;
       return cond.locations.includes(stateObj.state);
@@ -874,6 +916,13 @@ var CustomRoomCard = class extends HTMLElement {
     this._renderedTemplates = {};
     this._monitoredEntities = [];
     this._oldBodyHTML = "";
+    this._renderHandle = null;
+    this._entityRegistry = null;
+    this._deviceRegistry = null;
+    this._areaEntitiesCache = null;
+    this._personEntityId = null;
+    this._personScannedFor = void 0;
+    this._monitorDirty = true;
   }
   static getConfigElement() {
     return document.createElement("custom-room-card-editor");
@@ -886,19 +935,16 @@ var CustomRoomCard = class extends HTMLElement {
     const card_type = config.card_type || "rooms";
     const rooms = Array.isArray(config.rooms) && config.rooms.length ? config.rooms : config.area ? [{ area: config.area, title: config.title, icon: config.icon, color: config.color, entities: config.entities || {} }] : [];
     this._config = { ...config, card_type, rooms: rooms.map((room) => ({ entities: {}, ...room })) };
+    this._monitorDirty = true;
     this._updateMonitoredEntities();
     this._render();
   }
   _updateMonitoredEntities() {
     const entities = /* @__PURE__ */ new Set();
     if (!this._config) return;
-    if (this._hass && this._hass.user) {
-      const personEntity = Object.values(this._hass.states).find(
-        (s) => s.entity_id.startsWith("person.") && s.attributes.user_id === this._hass.user.id
-      );
-      if (personEntity) {
-        entities.add(personEntity.entity_id);
-      }
+    this._monitorDirty = false;
+    if (this._personEntityId) {
+      entities.add(this._personEntityId);
     }
     const cardType = this._config.card_type || "rooms";
     if (cardType === "rooms") {
@@ -962,47 +1008,82 @@ var CustomRoomCard = class extends HTMLElement {
     }
     this._monitoredEntities = Array.from(entities);
   }
-  _buildAreaEntitiesCache() {
-    if (!this._hass) return;
+  // Ricostruisce la mappa area -> entità solo quando cambiano i registri di entità o dispositivi.
+  // Prima veniva rifatta a ogni aggiornamento di hass, scorrendo l'intero registro entità.
+  _syncAreaEntitiesCache() {
+    if (!this._hass) return false;
+    const entityRegistry = this._hass.entities;
+    const deviceRegistry = this._hass.devices;
+    if (this._areaEntitiesCache && this._entityRegistry === entityRegistry && this._deviceRegistry === deviceRegistry) {
+      return false;
+    }
+    this._entityRegistry = entityRegistry;
+    this._deviceRegistry = deviceRegistry;
     const cache = {};
-    const devices = this._hass.devices || {};
-    Object.values(this._hass.entities || {}).forEach((e) => {
+    const devices = deviceRegistry || {};
+    Object.values(entityRegistry || {}).forEach((e) => {
       const areaId = e.area_id || e.device_id && devices[e.device_id]?.area_id;
-      if (areaId) {
-        if (!cache[areaId]) cache[areaId] = [];
-        if (this._hass.states[e.entity_id]) {
-          cache[areaId].push(e.entity_id);
-        }
-      }
+      if (!areaId) return;
+      (cache[areaId] || (cache[areaId] = [])).push(e.entity_id);
     });
     this._areaEntitiesCache = cache;
+    return true;
+  }
+  // Risolve (e memorizza) l'entità person dell'utente: la scansione di hass.states viene
+  // ripetuta solo se cambia l'utente, il registro entità o se la person memorizzata sparisce.
+  _syncUserPerson(force) {
+    const hass = this._hass;
+    const userId = hass.user ? hass.user.id : null;
+    const cached = this._personEntityId;
+    const cachedValid = cached ? hass.states[cached]?.attributes?.user_id === userId : true;
+    if (!force && this._personScannedFor === userId && cachedValid) return false;
+    this._personScannedFor = userId;
+    const found = findUserPerson(hass);
+    if (found === cached) return false;
+    this._personEntityId = found;
+    return true;
   }
   set hass(hass) {
     const oldHass = this._hass;
     this._hass = hass;
-    this._buildAreaEntitiesCache();
-    this._updateMonitoredEntities();
+    const registryChanged = this._syncAreaEntitiesCache();
+    const personChanged = this._syncUserPerson(registryChanged);
+    if (registryChanged || personChanged || this._monitorDirty) {
+      this._updateMonitoredEntities();
+    }
     if (!oldHass) {
       this._render();
       return;
     }
-    let changed = false;
-    for (const id of this._monitoredEntities) {
-      if (oldHass.states[id] !== hass.states[id]) {
-        changed = true;
-        break;
+    const monitored = this._monitoredEntities;
+    const oldStates = oldHass.states;
+    const newStates = hass.states;
+    for (let i = 0; i < monitored.length; i++) {
+      if (oldStates[monitored[i]] !== newStates[monitored[i]]) {
+        this._scheduleRender();
+        return;
       }
     }
-    if (changed) {
+  }
+  // Raggruppa più aggiornamenti di stato ravvicinati in un solo render per frame.
+  _scheduleRender() {
+    if (this._renderHandle !== null) return;
+    this._renderHandle = requestAnimationFrame(() => {
+      this._renderHandle = null;
       this._render();
-    }
+    });
   }
   connectedCallback() {
-    this._clock = window.setInterval(() => this._render(), 6e4);
+    if (this._clock) window.clearInterval(this._clock);
+    this._clock = window.setInterval(() => this._scheduleRender(), 6e4);
   }
   disconnectedCallback() {
     if (this._clock) window.clearInterval(this._clock);
     this._clock = null;
+    if (this._renderHandle !== null) {
+      cancelAnimationFrame(this._renderHandle);
+      this._renderHandle = null;
+    }
     Object.values(this._templateSubs).forEach((sub) => {
       if (sub.unsubFunc) {
         sub.unsubFunc();
@@ -1020,7 +1101,12 @@ var CustomRoomCard = class extends HTMLElement {
     return this._areaEntitiesCache?.[area] || [];
   }
   _sensor(ids, classes) {
-    return ids.map((id) => this._hass.states[id]).find((s) => classes.includes(s?.attributes?.device_class) && !OFF.has(s?.state));
+    const states = this._hass.states;
+    for (let i = 0; i < ids.length; i++) {
+      const s = states[ids[i]];
+      if (s && classes.includes(s.attributes?.device_class) && !OFF.has(s.state)) return s;
+    }
+    return void 0;
   }
   _motion(room, ids) {
     return room.motion_entity ? this._hass.states[room.motion_entity] : this._sensor(ids, ["motion", "occupancy", "presence"]);
@@ -1038,12 +1124,13 @@ var CustomRoomCard = class extends HTMLElement {
   }
   _sort(rooms) {
     if (!this._config.sort_by_motion) return rooms;
-    return [...rooms].sort((a, b) => {
-      const ma = this._motion(a.room, a.ids);
-      const mb = this._motion(b.room, b.ids);
-      if (on(ma) !== on(mb)) return on(mb) - on(ma);
-      return new Date(mb?.last_changed || 0) - new Date(ma?.last_changed || 0);
+    const keyed = rooms.map((entry) => {
+      const motion = this._motion(entry.room, entry.ids);
+      const time = motion ? new Date(motion.last_changed || 0).getTime() : 0;
+      return { entry, active: on(motion) ? 1 : 0, time: Number.isNaN(time) ? 0 : time };
     });
+    keyed.sort((a, b) => b.active - a.active || b.time - a.time);
+    return keyed.map((item) => item.entry);
   }
   _updateTemplateSubscriptions() {
     if (!this._hass || !this._config) return;
@@ -1069,7 +1156,7 @@ var CustomRoomCard = class extends HTMLElement {
               if (subInfo.cancelled) return;
               if (output && output.result !== void 0 && this._renderedTemplates[key] !== output.result) {
                 this._renderedTemplates[key] = output.result;
-                this._render();
+                this._scheduleRender();
               }
             },
             { type: "render_template", template: templateStr }
@@ -1130,7 +1217,7 @@ var CustomRoomCard = class extends HTMLElement {
   _showChip(chip) {
     if (chip.visibility) {
       const conds = Array.isArray(chip.visibility) ? chip.visibility : [chip.visibility];
-      return checkConditionsMet(this._hass, conds);
+      return checkConditionsMet(this._hass, conds, this._personEntityId);
     }
     if (!chip.condition_entity) return true;
     const stateObj = this._hass.states[chip.condition_entity];
@@ -1141,7 +1228,7 @@ var CustomRoomCard = class extends HTMLElement {
   _showRoom(room) {
     if (room.visibility) {
       const conds = Array.isArray(room.visibility) ? room.visibility : [room.visibility];
-      return checkConditionsMet(this._hass, conds);
+      return checkConditionsMet(this._hass, conds, this._personEntityId);
     }
     if (!room.condition_entity) return true;
     const stateObj = this._hass.states[room.condition_entity];
@@ -1160,7 +1247,7 @@ var CustomRoomCard = class extends HTMLElement {
       return selectedArray.map((item, chipIndex) => {
         const chip = typeof item === "string" ? { entity: item } : item;
         return { ...chip, roomIndex, category, chipIndex };
-      }).filter((chip) => chip.entity && domains.includes(chip.entity.split(".")[0]) && this._hass.states[chip.entity] && this._showChip(chip));
+      }).filter((chip) => chip.entity && domains.includes(domainOf(chip.entity)) && this._hass.states[chip.entity] && this._showChip(chip));
     });
   }
   _weather() {
@@ -1221,25 +1308,24 @@ var CustomRoomCard = class extends HTMLElement {
     `;
   }
   _render() {
+    if (this._renderHandle !== null) {
+      cancelAnimationFrame(this._renderHandle);
+      this._renderHandle = null;
+    }
     if (!this._hass || !this._config) return;
     this._updateTemplateSubscriptions();
     const cardType = this._config.card_type || "rooms";
+    let newHTML;
     if (cardType === "rooms") {
       const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })).filter(({ room }) => this._showRoom(room)));
-      const newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
-      if (this._oldBodyHTML !== newHTML) {
-        this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${newHTML}`;
-        this._oldBodyHTML = newHTML;
-        this._bindEvents(cardType);
-      }
+      newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">Aggiungi una stanza dalla configurazione della card.</div>`}</div>`;
     } else {
-      const newHTML = this._weather();
-      if (this._oldBodyHTML !== newHTML) {
-        this.shadowRoot.innerHTML = `<style>${CARD_STYLE}</style>${newHTML}`;
-        this._oldBodyHTML = newHTML;
-        this._bindEvents(cardType);
-      }
+      newHTML = this._weather();
     }
+    if (this._oldBodyHTML === newHTML) return;
+    this.shadowRoot.innerHTML = adoptStyle(this.shadowRoot, CARD_STYLE) + newHTML;
+    this._oldBodyHTML = newHTML;
+    this._bindEvents(cardType);
   }
   _bindEvents(cardType) {
     if (cardType === "rooms") {
@@ -1375,7 +1461,7 @@ var CustomRoomCard = class extends HTMLElement {
       const val = stateVal === "unknown" || stateVal === "unavailable" ? "-" : stateVal;
       const unit = stateVal !== "unknown" && stateVal !== "unavailable" ? stateObj.attributes.unit_of_measurement || "" : "";
       const label = itemConfig.name ? `${itemConfig.name} ${val}${unit}` : `${val}${unit}`;
-      const domain = itemConfig.entity.split(".")[0];
+      const domain = domainOf(itemConfig.entity);
       const icon = itemConfig.icon || getDomainIcon(domain, stateObj);
       return `<span class="status-metric" data-entity="${escape(itemConfig.entity)}"><ha-icon icon="${escape(icon)}"></ha-icon><span>${escape(label)}</span></span>`;
     }).filter(Boolean).join("");
@@ -1388,12 +1474,13 @@ var CustomRoomCard = class extends HTMLElement {
     const isPresenceActive = motion ? on(motion) : true;
     const color = isPresenceActive ? room.color || defaultColor(title) : "#808080";
     const lastMotion = motion ? elapsed(motion.last_changed) : "";
-    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-room-index="${roomIndex}" data-entity="${escape(room.motion_entity || ids[0] || "")}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}${lastMotion ? `<span class="motion-time">${lastMotion}</span>` : ""}</span><span class="summary">${status}${metrics}</span></button>${chips.length ? `<div class="chips">${chips.map((chip) => this._chip(chip)).join("")}</div>` : `<div class="empty">Nessuna entit\xE0 selezionata</div>`}</section>`;
+    const fallbackEntity = room.motion_entity || ids.find((id) => this._hass.states[id]) || "";
+    return `<section class="room" style="--room-color:${escape(color)}"><button class="header" data-room-index="${roomIndex}" data-entity="${escape(fallbackEntity)}" aria-label="${escape(title)}"><ha-icon class="room-icon" icon="${escape(room.icon || area?.icon || "mdi:home")}"></ha-icon><span class="title">${escape(title)}${lastMotion ? `<span class="motion-time">${lastMotion}</span>` : ""}</span><span class="summary">${status}${metrics}</span></button>${chips.length ? `<div class="chips">${chips.map((chip) => this._chip(chip)).join("")}</div>` : `<div class="empty">Nessuna entit\xE0 selezionata</div>`}</section>`;
   }
   _chip(chip) {
     const id = chip.entity;
-    const domain = id.split(".")[0];
-    const category = Object.values(CATEGORIES).find((item) => item.domain === domain) || CATEGORIES.switches;
+    const domain = domainOf(id);
+    const category = DOMAIN_CATEGORY[domain] || CATEGORIES.switches;
     const stateObj = this._hass.states[id];
     const active = on(stateObj);
     let icon = active ? chip.active_icon || chip.icon || category.icon : chip.icon || category.off;
@@ -1415,10 +1502,12 @@ var CustomRoomCard = class extends HTMLElement {
     this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
   }
 };
+var PICKER_SELECTOR = "ha-entity-picker, ha-entities-picker, ha-icon-picker, ha-area-picker, ha-selector, ha-card-conditions-editor";
 var CustomRoomCardEditor = class extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this._pickerSyncHandle = null;
   }
   connectedCallback() {
     if (!customElements.get("ha-card-conditions-editor")) {
@@ -1440,6 +1529,10 @@ var CustomRoomCardEditor = class extends HTMLElement {
   disconnectedCallback() {
     if (this._selectListener) {
       window.removeEventListener("custom-room-card-select", this._selectListener);
+    }
+    if (this._pickerSyncHandle !== null) {
+      cancelAnimationFrame(this._pickerSyncHandle);
+      this._pickerSyncHandle = null;
     }
   }
   _focusEditorPanel(type, roomIndex, category, chipIndex) {
@@ -1481,13 +1574,23 @@ var CustomRoomCardEditor = class extends HTMLElement {
     }
     this._render();
   }
+  // Propaga hass ai picker una volta per frame invece che a ogni cambio di stato: la query
+  // sullo shadow DOM dell'editor e la riassegnazione della proprietà sono costose.
+  _schedulePickerSync() {
+    if (this._pickerSyncHandle !== null) return;
+    this._pickerSyncHandle = requestAnimationFrame(() => {
+      this._pickerSyncHandle = null;
+      if (!this.shadowRoot || !this._hass) return;
+      this.shadowRoot.querySelectorAll(PICKER_SELECTOR).forEach((picker) => {
+        picker.hass = this._hass;
+      });
+    });
+  }
   set hass(hass) {
     const needsInitialRender = !this._hass && this._config;
     this._hass = hass;
     if (this.shadowRoot) {
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-entities-picker, ha-icon-picker, ha-area-picker, ha-selector, ha-card-conditions-editor").forEach((picker) => {
-        picker.hass = hass;
-      });
+      this._schedulePickerSync();
     }
     if (needsInitialRender) {
       this._render();
@@ -1795,7 +1898,7 @@ var CustomRoomCardEditor = class extends HTMLElement {
     }
     const cardType = this._config.card_type || "rooms";
     if (!this.shadowRoot.querySelector(".editor")) {
-      this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style><div class="editor"><div class="controls"><div class="control-item"><ha-select id="card-type" label="${localize(this._hass, "card_type")}"><ha-list-item value="rooms">${localize(this._hass, "rooms")}</ha-list-item><ha-list-item value="weather">${localize(this._hass, "weather")}</ha-list-item></ha-select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">${localize(this._hass, "sort_by_motion")}</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">${localize(this._hass, "show_entity_icons")}</label></div></div><div class="category-order-section rooms-only"><h5>${localize(this._hass, "category_order")}</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">${localize(this._hass, "add_room")}</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
+      this.shadowRoot.innerHTML = `${adoptStyle(this.shadowRoot, EDITOR_STYLE)}<div class="editor"><div class="controls"><div class="control-item"><ha-select id="card-type" label="${localize(this._hass, "card_type")}"><ha-list-item value="rooms">${localize(this._hass, "rooms")}</ha-list-item><ha-list-item value="weather">${localize(this._hass, "weather")}</ha-list-item></ha-select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">${localize(this._hass, "sort_by_motion")}</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">${localize(this._hass, "show_entity_icons")}</label></div></div><div class="category-order-section rooms-only"><h5>${localize(this._hass, "category_order")}</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">${localize(this._hass, "add_room")}</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
       const typeSelect = this.shadowRoot.querySelector("#card-type");
       typeSelect.value = cardType;
       typeSelect.addEventListener("change", (event) => {
