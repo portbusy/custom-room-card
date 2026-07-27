@@ -1282,24 +1282,24 @@ var CustomRoomCard = class extends HTMLElement {
     return `
       <section class="room weather-room" style="--room-color:${escape(color)}">
         <button class="header weather-header" aria-label="${escape(localize(this._hass, "weather"))}">
-          <div class="weather-greeting">${greeting}, ${name}</div>
+          <div class="weather-greeting">${escape(greeting)}, ${escape(name)}</div>
           <div class="weather-grid">
             <div class="weather-col-left">
-              <div class="weather-temp">${temp}\xB0</div>
-              <div class="weather-cond">${cond}</div>
+              <div class="weather-temp">${escape(temp)}\xB0</div>
+              <div class="weather-cond">${escape(cond)}</div>
               <div class="weather-sunset">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" style="flex-shrink:0;"><path fill="rgba(255,200,100,0.75)" d="M3,12H7A5,5 0 0,1 12,7A5,5 0 0,1 17,12H21A1,1 0 0,1 22,13A1,1 0 0,1 21,14H3A1,1 0 0,1 2,13A1,1 0 0,1 3,12M15,17A3,3 0 0,1 12,20A3,3 0 0,1 9,17H15Z"/></svg>
-                <span>${sunset}</span>
+                <span>${escape(sunset)}</span>
               </div>
             </div>
             <div class="weather-col-center">
-              ${iconPath ? `<img src="${iconPath}" />` : `<ha-icon icon="mdi:weather-partly-cloudy" style="--mdc-icon-size:80px;color:rgba(255,255,255,0.7)"></ha-icon>`}
+              ${iconPath ? `<img src="${escape(iconPath)}" />` : `<ha-icon icon="mdi:weather-partly-cloudy" style="--mdc-icon-size:80px;color:rgba(255,255,255,0.7)"></ha-icon>`}
             </div>
             <div class="weather-col-right">
-              <div class="weather-high">\u2191 ${high}\xB0</div>
-              <div class="weather-low">\u2193 ${low}\xB0</div>
+              <div class="weather-high">\u2191 ${escape(high)}\xB0</div>
+              <div class="weather-low">\u2193 ${escape(low)}\xB0</div>
               <div class="weather-precip">
-                ${umbrellaIcon}<span>${precip}%</span>
+                ${umbrellaIcon}<span>${escape(precip)}%</span>
               </div>
             </div>
           </div>
