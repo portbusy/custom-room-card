@@ -1,5 +1,5 @@
 const CARD_TAG = "custom-room-card";
-const VERSION = "1.2.3";
+const VERSION = "1.2.4";
 const CATEGORIES = {
   lights: { domain: "light", label: "Luci", icon: "mdi:lightbulb", off: "mdi:lightbulb-outline" },
   covers: { domain: "cover", label: "Tapparelle", icon: "mdi:roller-shade", off: "mdi:roller-shade-closed" },
