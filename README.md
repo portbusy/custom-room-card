@@ -134,7 +134,7 @@ chips:
 | `type` | string | **Yes** | Must be `custom:custom-room-card`. |
 | `card_type` | string | No | Mode of the card: `rooms` (default) or `weather`. |
 | `sort_by_motion` | boolean | No | Automatically moves rooms with active motion/occupancy to the top (only in `rooms` mode). Default: `false`. |
-| `auto_two_columns` | boolean | No | Automatically displays room cards in two columns on displays at least 1100 px wide, and falls back to one column on smaller displays. Default: `false`. |
+| `auto_two_columns` | boolean | No | Displays room cards in two columns when at least 700 px are available. In a Sections view, set the containing section's column span to `2`; the card uses the native full-width grid sizing and falls back to one column in narrower sections. Default: `false`. |
 | `show_entity_icons` | boolean | No | Ignores category default icons and forces chips to display real entity icons if configured in Home Assistant. Default: `false`. |
 | `category_order` | list | No | Custom display order of category chips. List of: `lights`, `covers`, `climate`, `media`, `switches`. |
 | `rooms` | list | No | List of room configuration objects (see below) (only when `card_type: rooms`). |
