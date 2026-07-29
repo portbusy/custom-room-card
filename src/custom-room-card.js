@@ -71,6 +71,7 @@ const TRANSLATIONS = {
     rooms: "Rooms",
     weather: "Weather",
     sort_by_motion: "Sort rooms by motion",
+    auto_two_columns: "Use two columns on wide displays",
     show_entity_icons: "Use real entity icons",
     category_order: "Category ordering",
     add_room: "Add room",
@@ -128,6 +129,7 @@ const TRANSLATIONS = {
     rooms: "Stanze",
     weather: "Meteo",
     sort_by_motion: "Ordina le stanze per movimento",
+    auto_two_columns: "Usa due colonne su display ampi",
     show_entity_icons: "Usa icone reali delle entità",
     category_order: "Ordinamento categorie",
     add_room: "Aggiungi stanza",
@@ -185,6 +187,7 @@ const TRANSLATIONS = {
     rooms: "Pièces",
     weather: "Météo",
     sort_by_motion: "Trier les pièces par mouvement",
+    auto_two_columns: "Utiliser deux colonnes sur les grands écrans",
     show_entity_icons: "Utiliser de vraies icônes d'entités",
     category_order: "Ordre des catégories",
     add_room: "Ajouter une pièce",
@@ -242,6 +245,7 @@ const TRANSLATIONS = {
     rooms: "Habitaciones",
     weather: "Meteorología",
     sort_by_motion: "Ordenar habitaciones por movimiento",
+    auto_two_columns: "Usar dos columnas en pantallas amplias",
     show_entity_icons: "Usar iconos reales de entidades",
     category_order: "Orden de catégories",
     add_room: "Agregar habitación",
@@ -299,6 +303,7 @@ const TRANSLATIONS = {
     rooms: "Räume",
     weather: "Wetter",
     sort_by_motion: "Räume nach Bewegung sortieren",
+    auto_two_columns: "Auf breiten Displays zwei Spalten verwenden",
     show_entity_icons: "Echte Entitätssymbole verwenden",
     category_order: "Reihenfolge der Kategorien",
     add_room: "Raum hinzufügen",
@@ -353,7 +358,7 @@ function localize(hass, key) {
 }
 
 const CARD_STYLE = `
-  :host{display:block}.rooms{display:grid;gap:14px}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;width:100%}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
+  :host{display:block;container-type:inline-size}.rooms{display:grid;gap:14px}@container (min-width:700px){.rooms.auto-two-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.rooms.auto-two-columns .empty{grid-column:1/-1}}.room{overflow:hidden;border-radius:24px;background:var(--card-background-color);box-shadow:0 2px 8px rgb(0 0 0 / 7%),0 0 0 1px color-mix(in srgb,var(--room-color) 27%,transparent),inset 0 1px 0 rgb(255 255 255 / 12%)}.header{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;padding:16px 18px 18px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 92%,transparent),color-mix(in srgb,var(--room-color) 55%,transparent) 35%,color-mix(in srgb,var(--room-color) 20%,transparent) 65%,transparent)}.title{display:inline-flex;align-items:baseline;font-size:1.1em;font-weight:600;line-height:1.2;text-shadow:0 1px 3px rgb(0 0 0 / 20%)}.room-icon{position:absolute;right:18px;top:16px;--mdc-icon-size:40px;color:color-mix(in srgb,var(--room-color) 82%,white);filter:drop-shadow(0 2px 4px rgb(0 0 0 / 15%))}.summary{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.82em;white-space:nowrap}.summary ha-icon{--mdc-icon-size:18px;color:rgb(255 255 255 / 42%)}.summary ha-icon.active{color:#ffa726}.motion-time{margin-left:8px;font-size:.72em;font-weight:normal;color:rgb(255 255 255 / 65%);text-shadow:none}.chips{display:flex;align-content:center;gap:8px;flex-wrap:wrap;box-sizing:border-box;padding:8px 14px 12px;background:linear-gradient(120deg,color-mix(in srgb,var(--room-color) 13%,transparent),color-mix(in srgb,var(--room-color) 4%,transparent))}.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;max-width:100%;padding:0 10px;border:1px solid color-mix(in srgb,var(--room-color) 23%,transparent);border-radius:999px;background:color-mix(in srgb,var(--room-color) 7%,transparent);color:var(--primary-text-color);font:600 .82em/1 var(--primary-font-family,sans-serif);cursor:pointer;box-shadow:0 2px 2px rgb(0 0 0 / 20%)}.chip ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}.chip.active{border-color:color-mix(in srgb,var(--chip-active,#ffb300) 52%,transparent);background:color-mix(in srgb,var(--chip-active,#ffb300) 15%,transparent)}.chip.active ha-icon{color:var(--chip-active,#ffb300)}.empty{padding:18px 14px;color:var(--secondary-text-color)}.status-icon{cursor:pointer}.status-metric{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.weather-header{width:100%;box-sizing:border-box;padding:20px 22px 16px 22px;border:0;color:#fff;text-align:left;cursor:pointer;background:linear-gradient(135deg,rgba(18,38,58,0.97) 0%,rgba(30,65,95,0.95) 55%,rgba(20,50,75,0.97) 100%);font-family:inherit}.weather-greeting{font-size:0.72em;font-weight:500;letter-spacing:0.06em;opacity:0.55;margin-bottom:12px;text-transform:uppercase;text-align:left}.weather-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;width:100%}.weather-col-left{text-align:left}.weather-temp{font-size:2.6em;font-weight:300;line-height:1;letter-spacing:-1.5px}.weather-cond{font-size:0.85em;opacity:0.75;margin-top:6px}.weather-sunset{display:flex;align-items:center;font-size:0.85em;opacity:0.50;margin-top:4px;gap:5px}.weather-col-center{display:flex;align-items:center;justify-content:center;margin:-18px 0}.weather-col-center img{width:130px;height:130px}.weather-col-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}.weather-high,.weather-low{font-size:0.95em;font-weight:600;opacity:0.9}.weather-precip{display:flex;align-items:center;font-size:0.95em;font-weight:500}
   .chip-dropdown {
     position: relative;
     padding-right: 22px !important;
@@ -1372,7 +1377,8 @@ class CustomRoomCard extends HTMLElement {
     let newHTML;
     if (cardType === "rooms") {
       const rooms = this._sort((this._config.rooms || []).map((room, roomIndex) => ({ room, ids: this._areaIds(room.area), roomIndex })).filter(({ room }) => this._showRoom(room)));
-      newHTML = `<div class="rooms">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">${escape(localize(this._hass, "empty_card"))}</div>`}</div>`;
+      const responsiveClass = this._config.auto_two_columns ? " auto-two-columns" : "";
+      newHTML = `<div class="rooms${responsiveClass}">${rooms.map(({ room, ids, roomIndex }) => this._room(room, ids, roomIndex)).join("") || `<div class="empty">${escape(localize(this._hass, "empty_card"))}</div>`}</div>`;
     } else {
       newHTML = this._weather();
     }
@@ -1934,7 +1940,7 @@ class CustomRoomCardEditor extends HTMLElement {
     const cardType = this._config.card_type || "rooms";
     
     if (!this.shadowRoot.querySelector(".editor")) {
-      this.shadowRoot.innerHTML = `${adoptStyle(this.shadowRoot, EDITOR_STYLE)}<div class="editor"><div class="controls"><div class="control-item"><ha-select id="card-type" label="${localize(this._hass, "card_type")}"><ha-list-item value="rooms">${localize(this._hass, "rooms")}</ha-list-item><ha-list-item value="weather">${localize(this._hass, "weather")}</ha-list-item></ha-select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">${localize(this._hass, "sort_by_motion")}</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">${localize(this._hass, "show_entity_icons")}</label></div></div><div class="category-order-section rooms-only"><h5>${localize(this._hass, "category_order")}</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">${localize(this._hass, "add_room")}</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
+      this.shadowRoot.innerHTML = `${adoptStyle(this.shadowRoot, EDITOR_STYLE)}<div class="editor"><div class="controls"><div class="control-item"><ha-select id="card-type" label="${localize(this._hass, "card_type")}"><ha-list-item value="rooms">${localize(this._hass, "rooms")}</ha-list-item><ha-list-item value="weather">${localize(this._hass, "weather")}</ha-list-item></ha-select></div><div class="control-item rooms-only"><ha-switch id="sort" ${this._config.sort_by_motion ? "checked" : ""}></ha-switch><label for="sort">${localize(this._hass, "sort_by_motion")}</label></div><div class="control-item rooms-only"><ha-switch id="auto-two-columns" ${this._config.auto_two_columns ? "checked" : ""}></ha-switch><label for="auto-two-columns">${localize(this._hass, "auto_two_columns")}</label></div><div class="control-item"><ha-switch id="entity-icons" ${this._config.show_entity_icons ? "checked" : ""}></ha-switch><label for="entity-icons">${localize(this._hass, "show_entity_icons")}</label></div></div><div class="category-order-section rooms-only"><h5>${localize(this._hass, "category_order")}</h5><div id="category-order-list"></div></div><div id="rooms-section" class="rooms-only"><div id="rooms"></div><ha-button id="add">${localize(this._hass, "add_room")}</ha-button></div><div id="weather-section" class="weather-only"></div></div>`;
       
       const typeSelect = this.shadowRoot.querySelector("#card-type");
       typeSelect.value = cardType;
@@ -1945,6 +1951,7 @@ class CustomRoomCardEditor extends HTMLElement {
       });
       
       this.shadowRoot.querySelector("#sort").addEventListener("change", (event) => this._emit({ ...this._config, sort_by_motion: event.currentTarget.checked }));
+      this.shadowRoot.querySelector("#auto-two-columns").addEventListener("change", (event) => this._emit({ ...this._config, auto_two_columns: event.currentTarget.checked }));
       this.shadowRoot.querySelector("#entity-icons").addEventListener("change", (event) => this._emit({ ...this._config, show_entity_icons: event.currentTarget.checked }));
       this.shadowRoot.querySelector("#add").addEventListener("click", () => { this._emit({ ...this._config, rooms: [...(this._config.rooms || []), { entities: {} }] }); this._render(); });
     } else {
@@ -1952,6 +1959,8 @@ class CustomRoomCardEditor extends HTMLElement {
       if (typeSelect) typeSelect.value = cardType;
       const sortSwitch = this.shadowRoot.querySelector("#sort");
       if (sortSwitch) sortSwitch.checked = !!this._config.sort_by_motion;
+      const autoTwoColumnsSwitch = this.shadowRoot.querySelector("#auto-two-columns");
+      if (autoTwoColumnsSwitch) autoTwoColumnsSwitch.checked = !!this._config.auto_two_columns;
       const iconsSwitch = this.shadowRoot.querySelector("#entity-icons");
       if (iconsSwitch) iconsSwitch.checked = !!this._config.show_entity_icons;
     }

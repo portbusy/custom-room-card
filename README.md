@@ -68,6 +68,7 @@ You can configure this card using the visual editor or define it via YAML:
 type: custom:custom-room-card
 card_type: rooms
 sort_by_motion: true
+auto_two_columns: true
 show_entity_icons: false
 category_order:
   - lights
@@ -133,6 +134,7 @@ chips:
 | `type` | string | **Yes** | Must be `custom:custom-room-card`. |
 | `card_type` | string | No | Mode of the card: `rooms` (default) or `weather`. |
 | `sort_by_motion` | boolean | No | Automatically moves rooms with active motion/occupancy to the top (only in `rooms` mode). Default: `false`. |
+| `auto_two_columns` | boolean | No | Automatically displays room cards in two columns when the card has at least 700 px of available width, and falls back to one column on narrower layouts. Default: `false`. |
 | `show_entity_icons` | boolean | No | Ignores category default icons and forces chips to display real entity icons if configured in Home Assistant. Default: `false`. |
 | `category_order` | list | No | Custom display order of category chips. List of: `lights`, `covers`, `climate`, `media`, `switches`. |
 | `rooms` | list | No | List of room configuration objects (see below) (only when `card_type: rooms`). |
